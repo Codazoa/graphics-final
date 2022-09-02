@@ -33,6 +33,7 @@
         // create and bind the buffer before we start drawing
         let vertex_buffer = create_and_load_vertex_buffer(gl, verts, gl.STATIC_DRAW);
 
+        // vertex shader
         let vertex_source =
         `   #version 300 es
             precision mediump float;
@@ -47,7 +48,8 @@
                 v_color = color;
             }
         `;
-
+        
+        // fragment shader
         let fragment_source =
         `   #version 300 es
             precision mediump float;
@@ -61,9 +63,11 @@
             }
         `;
         
+        // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
         gl.useProgram( shader_program );
 
+        // set buffer for vertex coordinates
         set_vertex_attrib_to_buffer(
             gl, shader_program,
             "coordinates",
@@ -71,6 +75,7 @@
             gl.FLOAT, false, 4 * 7, 0
         );
 
+        // set buffer for vertex colors
         set_vertex_attrib_to_buffer(
             gl, shader_program,
             "color",
@@ -78,16 +83,17 @@
             gl.FLOAT, false, 4 * 7, 4 * 3 
         );
 
+        // setting various render settings
         set_render_params( gl );
 
+        // clear screen
         gl.clear( gl.COLOR_BUFFER_BIT );
 
+        // draw the triangles to the screen
         gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
         delete_program_and_attached_shaders( gl, shader_program );
         gl.deleteBuffer( vertex_buffer );
-
-
     </script>
     
 </body>
