@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Hello Colors</title>
+    <title>cs442-graphics-engine</title>
     <style media="screen">
         #the-canvas {border: 1px solid darkblue}
     </style>
@@ -68,6 +68,7 @@
         gl.useProgram( shader_program );
 
         // set buffer for vertex coordinates
+        // 3 coordinate values with 4 * 7 byte stride, coordinates start at 0
         set_vertex_attrib_to_buffer(
             gl, shader_program,
             "coordinates",
@@ -76,6 +77,7 @@
         );
 
         // set buffer for vertex colors
+        // 4 color values with 4 * 7 byte stride, colors start 4 * 3 bytes into array
         set_vertex_attrib_to_buffer(
             gl, shader_program,
             "color",
@@ -90,6 +92,7 @@
         gl.clear( gl.COLOR_BUFFER_BIT );
 
         // draw the triangles to the screen
+        // 6 vertecies to draw
         gl.drawArrays( gl.TRIANGLES, 0, 6 );
 
         delete_program_and_attached_shaders( gl, shader_program );
