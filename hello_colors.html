@@ -2,10 +2,77 @@
 <html lang="en">
 <head>
     <title>Hello Colors</title>
+    <style media="screen">
+        #the-canvas {border: 1px solid darkblue}
+    </style>
 </head>
 <body>
-    <script>
+    <canvas id="the-canvas" width="800" height="800"></canvas>
+    <script src="lib.js"></script>
 
+    <script>
+        let canvas = document.getElementById('the-canvas');
+
+        /** @type {WebGLRenderingContext} */
+        let gl = canvas.getContext('webgl2');
+
+        // create vertex interleaved color array
+        let verts = [
+             -0.5, -0.5, 0, 1, 0, 0, 1,
+             -0.5, 0, 0, 0, 1, 0 , 1,
+             0, 0, 0, 0, 0, 1, 1
+        ]
+
+
+        // create and bind the buffer before we start drawing
+        let vertex_buffer = create_and_load_vertex_buffer(gl, verts, gl.STATIC_DRAW);
+
+        let vertex_source =
+        `   #version 300 es
+            precision mediump float;
+
+            in vec3 coordinates;
+            in vec4 color;
+
+            out vec4 v_color;
+
+            void main(void){
+                gl_Position = vec4( coordinates, 1.0 );
+                v_color = color;
+            }
+        `;
+
+        let fragment_source =
+        `   #version 300 es
+            precision mediump float;
+
+            in vec4 v_color;
+
+            out vec4 f_color;
+
+            void main(void){
+                f_color = v_color;
+            }
+        `;
+        
+        let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
+        gl.useProgram( shader_program );
+
+        set_vertex_attrib_to_buffer(
+            gl, shader_program,
+            "coordinates",
+            vertex_buffer, 3,
+            gl.FLOAT, false, 0, 0
+        );
+
+        set_render_params( gl );
+
+        gl.clear( gl.COLOR_BUFFER_BIT );
+
+        gl.drawArrays( gl.TRIANGLES, 0, 3 );
+
+        delete_program_and_attached_shaders( gl, shader_program );
+        gl.deleteBuffer( vertex_buffer );
 
 
     </script>
