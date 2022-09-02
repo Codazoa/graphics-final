@@ -65,6 +65,13 @@
             gl.FLOAT, false, 0, 0
         );
 
+        set_vertex_attrib_to_buffer(
+            gl, shader_program,
+            "color",
+            vertex_buffer, 4,
+            gl.FLOAT, false, 4 * 7, 4 * 3 
+        );
+
         set_render_params( gl );
 
         gl.clear( gl.COLOR_BUFFER_BIT );
