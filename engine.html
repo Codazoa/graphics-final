@@ -9,8 +9,8 @@
 <body>
     <canvas id="the-canvas" width="800" height="800"></canvas>
     <script src="lib.js"></script>
-    <script src="matrix.js"></script>
-    <script src="vector.js"></script>
+    <script src="matrix_template.js"></script>
+    <script src="vector_template.js"></script>
 
     <script>
 
@@ -37,18 +37,18 @@
             mul.transform_vec(vec).toString() );
 
 
-        // const vec2 = new Vec4( 3, 6, 9, 1 );
-        // const scaled = vec.scaled( 10 );
-        // const dot = vec.dot( vec2 );
-        // const length = vec2.length();
-        // const norm = vec2.norm();
-        // const add = vec.add( vec2 );
+        const vec2 = new Vec4( 3, 6, 9, 1 );
+        const scaled = vec.scaled( 10 );
+        const dot = vec.dot( vec2 );
+        const length = vec2.length();
+        const norm = vec2.norm();
+        const add = vec.add( vec2 );
                     
-        // console.log( 'Vector multiplied by scaler: ' , scaled.toString() );
-        // console.log( 'Vector dot vector: ', dot.toString() );
-        // console.log( 'Vector length: ', length );
-        // console.log( 'Vector norm: ', norm.toString() );
-        // console.log( 'Vector add: ', add.toString() );
+        console.log( 'Vector multiplied by scaler: ' , scaled.toString() );
+        console.log( 'Vector dot vector: ', dot.toString() );
+        console.log( 'Vector length: ', length );
+        console.log( 'Vector norm: ', norm.toString() );
+        console.log( 'Vector add: ', add.toString() );
 
         // ##########################################################
         // ##
