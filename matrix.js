@@ -43,8 +43,15 @@ class Mat4 {
      * @returns {Mat4}  
      */
     static rotation_xy( turns ) {
-        
         // return the rotation matrix
+        let rot = turns * 2 * Math.PI
+        let data = [
+            Math.cos(rot), -Math.sin(rot), 0, 0,
+            -Math.sin(rot), Math.cos(rot), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ]   
+        return new Mat4( data );
     }
 
     /**
@@ -53,8 +60,15 @@ class Mat4 {
      * @returns {Mat4}  
      */
     static rotation_xz( turns ) {
-
         // return the rotation matrix
+        let rot = turns * 2 * Math.PI
+        let data = [
+            Math.cos(rot), 0, Math.sin(rot), 0,
+            0, 1, 0, 0,
+            -Math.sin(rot), 0, Math.cos(rot), 0,
+            0, 0, 0, 1,
+        ]
+        return new Mat4( data );
     }
 
     /**
@@ -63,23 +77,60 @@ class Mat4 {
      * @returns {Mat4}  
      */
     static rotation_yz( turns ) {
-        
         // return the rotation matrix
+        let rot = turns * 2 * Math.PI
+        let data = [
+            1, 0, 0, 0,
+            0, Math.cos(rot), Math.sin(rot), 0,
+            0, -Math.sin(rot), Math.cos(rot), 0,
+            0, 0, 0, 1,
+        ]
+        return new Mat4( data );
     }
 
     static translation( dx, dy, dz ) {
-        
         // return the translation matrix
+        let data = [
+            1, 0, 0, dx,
+            0, 1, 0, dy,
+            0, 0, 1, dz,
+            0, 0, 0, 1,
+        ]
+        return new Mat4( data );
     }
 
     static scale( sx, sy, sz ) {
-        
         // return the scaling matrix
+        let data = [
+            sx, 0, 0, 0,
+            0, sy, 0, 0,
+            0, 0, sz, 0,
+            0, 0, 0, 1,
+        ]
+        return new Mat4( data );
     }
 
     mul( right ) {
-        
         // return the result of multiplication
+        // slicing out basis vectors from left matrix
+        let lx = this.data.slice( 0, 4 );
+        let ly = this.data.slice( 4, 8 );
+        let lz = this.data.slice( 8, 12 );
+        let lw = this.data.slice( 12, 16 );
+        let leftArrays = [lx, ly, lz, lw]
+
+        // setting up arrays to get right matrix basis vectors
+        let rx = [right.data[0], right.data[4], right.data[8], right.data[12],]
+        let ry = [right.data[1], right.data[5], right.data[9], right.data[13],]
+        let rz = [right.data[2], right.data[6], right.data[10], right.data[14],]
+        let rw = [right.data[3], right.data[7], right.data[11], right.data[15],]
+        let rightArrays = [rx, ry, rz, rw]
+
+        // create data array and push calculation onto it for each row and column
+        let data = []
+        leftArrays.forEach(row => rightArrays.forEach(col => 
+            data.push(col[0]*row[0]+col[1]*row[1]+col[2]*row[2]+col[3]*row[3])))
+        return new Mat4( data )
     }
 
 	// right multiply by column vector
@@ -88,8 +139,20 @@ class Mat4 {
     }
 
     transform_vec( vec ) {
-        
         // return the transformed vector
+        // slicing out basis vectors from left matrix
+        let lx = this.data.slice( 0, 4 );
+        let ly = this.data.slice( 4, 8 );
+        let lz = this.data.slice( 8, 12 );
+        let lw = this.data.slice( 12, 16 );
+        let leftArrays = [lx, ly, lz, lw]
+
+        // step through each row and calculate for each array element (ae)
+        let data = []
+        leftArrays.forEach(row => 
+            data.push( (vec.x)*row[0] + (vec.y)*row[1] + (vec.z)*row[2] + (vec.w)*row[3] ))
+
+        return new Vec4(data[0], data[1], data[2], data[3])
     }
 
 

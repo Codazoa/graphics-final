@@ -14,8 +14,12 @@ class Vec4 {
      * @returns {Vec4}
      */
     scaled( by ) {
-        
         // return the new vector
+        let new_x = this.x * by;
+        let new_y = this.y * by;
+        let new_z = this.z * by;
+        let new_w = this.w * by;
+        return new Vec4( new_x, new_y, new_z, new_w );
     }
 
     /**
@@ -24,8 +28,12 @@ class Vec4 {
      * @returns {number}
      */
     dot( other ) {
-        
         // return the dot product 
+        let com_x = this.x * other.x;
+        let com_y = this.y * other.y;
+        let com_z = this.z * other.z;
+        let com_w = this.w * other.w;
+        return com_x + com_y + com_z + com_w;
     }
 
     /**
@@ -33,8 +41,12 @@ class Vec4 {
      * @returns {number}
      */
     length() {
-        
         // return the length
+        let com_x = this.x ** 2;
+        let com_y = this.y ** 2;
+        let com_z = this.z ** 2;
+        let com_w = this.w ** 2;
+        return Math.sqrt( com_x + com_y + com_z + com_w );
     }
 
     /**
@@ -42,8 +54,14 @@ class Vec4 {
      * @returns {Vec4}
      */
     norm() {
-        
         // return the normalized vector
+        let mag = this.length();
+        let com_x = this.x / mag;
+        let com_y = this.y / mag;
+        let com_z = this.z / mag;
+        let com_w = this.w / mag;
+        return new Vec4( com_x, com_y, com_z, com_w );
+        
     }
 
     /**
@@ -51,8 +69,12 @@ class Vec4 {
      * @param {Vec4} other 
      */
     add( other ) {
-        
         // return the vector sum
+        let com_x = this.x + other.x;
+        let com_y = this.y + other.y;
+        let com_z = this.z + other.z;
+        let com_w = this.w + other.w;
+        return new Vec4( com_x, com_y, com_z, com_w );
     }
 
     sub( other ) {
