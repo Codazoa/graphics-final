@@ -46,7 +46,7 @@ class Mat4 {
         // return the rotation matrix
         let rot = turns * 2 * Math.PI
         let data = [
-            Math.cos(rot), -Math.sin(rot), 0, 0,
+            Math.cos(rot), Math.sin(rot), 0, 0,
             -Math.sin(rot), Math.cos(rot), 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1,
