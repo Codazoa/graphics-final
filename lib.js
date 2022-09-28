@@ -144,14 +144,14 @@ function set_render_params( gl ) {
     // gl.viewport( 0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight );
 }
 
-// /** Sets uniform data for a row-major matrix4 
-//  * @param {WebGLRenderingContext} gl
-//  * @param {WebGLProgram} program
-//  * @param {string} name
-//  * @param {number[]} data 
-//  */
-// function set_uniform_matrix4( gl, program, name, data ){
-//     const loc = gl.getUniformLocation( program, name );
-//     gl.uniformMatrix4fv( loc, true, data );
-// }
+/** Sets uniform data for a row-major matrix4 
+ * @param {WebGLRenderingContext} gl
+ * @param {WebGLProgram} program
+ * @param {string} name
+ * @param {number[]} data 
+ */
+function set_uniform_matrix4( gl, program, name, data ){
+    const loc = gl.getUniformLocation( program, name );
+    gl.uniformMatrix4fv( loc, true, data );
+}
 
