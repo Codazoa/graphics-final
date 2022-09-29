@@ -13,9 +13,13 @@
     <script src="vector_template.js"></script>
 
     <script>
+        const ROTATION_SPEED_XY = 0.25;
+        const ROTATION_SPEED_XZ = 0.5;
+        const ROTATION_SPEED_YZ = 0.05;
 
-        const ROTATION_SPEED = 0.25;
-        let rotation_amnt = 0.0;
+        let rotation_amnt_xy = 0.0;
+        let rotation_amnt_xz = 0.0;
+        let rotation_amnt_yz = 0.0;
 
         let last_update = performance.now();
 
@@ -33,7 +37,6 @@
             0, 0.6, 0,          0, 1, 0, 1,
             0.5, -0.25, 0,      0, 0, 1, 1,
         ]
-
 
         // create and bind the buffer before we start drawing
         let vertex_buffer = create_and_load_vertex_buffer(gl, verts, gl.STATIC_DRAW);
@@ -74,28 +77,8 @@
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
         gl.useProgram( shader_program );
 
-        // set buffer for vertex coordinates
-        // 3 coordinate values with 4 * 7 byte stride, coordinates start at 0
-        set_vertex_attrib_to_buffer(
-            gl, shader_program,
-            "coordinates",
-            vertex_buffer, 3,
-            gl.FLOAT, false, 4 * 7, 0
-        );
-
-        // set buffer for vertex colors
-        // 4 color values with 4 * 7 byte stride, colors start 4 * 3 bytes into array
-        set_vertex_attrib_to_buffer(
-            gl, shader_program,
-            "color",
-            vertex_buffer, 4,
-            gl.FLOAT, false, 4 * 7, 4 * 3 
-        );
-
         // setting various render settings
-        set_render_params( gl );
-        
-        
+        set_render_params( gl );        
         
         requestAnimationFrame( render );
         
@@ -106,10 +89,20 @@
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
 
-            rotation_amnt += ROTATION_SPEED * time_delta;
-            rotation_amnt %= 1.0;
+            rotation_amnt_xy += ROTATION_SPEED_XY * time_delta;
+            rotation_amnt_xy %= 1.0;
+
+            rotation_amnt_xz += ROTATION_SPEED_XZ * time_delta;
+            rotation_amnt_xz %= 1.0;
+
+            rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta;
+            rotation_amnt_yz %= 1.0;
             
-            let model = Mat4.rotation_xz( rotation_amnt );
+            let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
+            let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
+            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
+
+            let model = rot_xy.mul( rot_xz.mul( rot_yz ) );
             
             set_uniform_matrix4( gl, shader_program, "modelview", model.data);
             
