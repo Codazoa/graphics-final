@@ -14,6 +14,11 @@
 
     <script>
 
+        const ROTATION_SPEED = 0.25;
+        let rotation_amnt = 0.0;
+
+        let last_update = performance.now();
+
         let canvas = document.getElementById('the-canvas');
 
         /** @type {WebGLRenderingContext} */
@@ -24,9 +29,9 @@
         // x1,y1,z1,r1,g1,b1,a1,...
         // Need to match colors of top right and bot left vertex
         let verts = [
-            -0.5, -0.25, 0.5,     1, 0, 0, 1,
-            0, 0.6, 0.5,          0, 1, 0, 1,
-            0.5, -0.25, 0.5,      0, 0, 1, 1,
+            -0.5, -0.25, 0,     1, 0, 0, 1,
+            0, 0.6, 0,          0, 1, 0, 1,
+            0.5, -0.25, 0,      0, 0, 1, 1,
         ]
 
 
@@ -89,24 +94,48 @@
 
         // setting various render settings
         set_render_params( gl );
-
-        gl.clear( gl.COLOR_BUFFER_BIT );
-
-
         
-        // draw the triangles to the screen
-        gl.drawArrays( gl.TRIANGLES, 0, 3 );
         
-        // function render( now ){
-        //     // clear screen
+        
+        requestAnimationFrame( render );
+        
+        function render( now ){
+            let time_delta = ( now - last_update ) / 1000;
+            last_update = performance.now()
             
-            
-        //     requestAnimationFrame( render ); 
-        // }
-        // requestAnimationFrame( render );
+            // clear screen
+            gl.clear( gl.COLOR_BUFFER_BIT );
 
-        delete_program_and_attached_shaders( gl, shader_program );
-        gl.deleteBuffer( vertex_buffer );
+            rotation_amnt += ROTATION_SPEED * time_delta;
+            rotation_amnt %= 1.0;
+            
+            let model = Mat4.rotation_xz( rotation_amnt );
+            
+            set_uniform_matrix4( gl, shader_program, "modelview", model.data);
+            
+            // set buffer for vertex coordinates
+            // 3 coordinate values with 4 * 7 byte stride, coordinates start at 0
+            set_vertex_attrib_to_buffer(
+                gl, shader_program,
+                "coordinates",
+                vertex_buffer, 3,
+                gl.FLOAT, false, 4 * 7, 0
+            );
+
+            // set buffer for vertex colors
+            // 4 color values with 4 * 7 byte stride, colors start 4 * 3 bytes into array
+            set_vertex_attrib_to_buffer(
+                gl, shader_program,
+                "color",
+                vertex_buffer, 4,
+                gl.FLOAT, false, 4 * 7, 4 * 3 
+            );
+
+            // draw the triangles to the screen
+            gl.drawArrays( gl.TRIANGLES, 0, 3 );
+            
+            requestAnimationFrame( render ); 
+        }
 
     </script>
     
