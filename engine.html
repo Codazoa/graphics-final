@@ -13,6 +13,7 @@
     <script src="vector_template.js"></script>
 
     <script>
+        // set rotation speeds
         const ROTATION_SPEED_XY = 0.25;
         const ROTATION_SPEED_XZ = 0.5;
         const ROTATION_SPEED_YZ = 0.05;
@@ -102,7 +103,7 @@
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
             let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
 
-            let model = rot_xy.mul( rot_xz.mul( rot_yz ) );
+            let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
             
             set_uniform_matrix4( gl, shader_program, "modelview", model.data);
             
