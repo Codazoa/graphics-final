@@ -18,10 +18,12 @@
         const ROTATION_SPEED_XZ = 0.5;
         const ROTATION_SPEED_YZ = 0.05;
 
+        // set rotation amounts
         let rotation_amnt_xy = 0.0;
         let rotation_amnt_xz = 0.0;
         let rotation_amnt_yz = 0.0;
 
+        let time_delta = 0.0;
         let last_update = performance.now();
 
         let canvas = document.getElementById('the-canvas');
@@ -81,28 +83,33 @@
         // setting various render settings
         set_render_params( gl );        
         
+        // initializing render function
         requestAnimationFrame( render );
-        
         function render( now ){
-            let time_delta = ( now - last_update ) / 1000;
-            last_update = performance.now()
+            time_delta = ( now - last_update ) / 1000;
+            last_update = performance.now();
             
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
 
+            // get new xy rotation
             rotation_amnt_xy += ROTATION_SPEED_XY * time_delta;
             rotation_amnt_xy %= 1.0;
 
+            // get new xz rotation
             rotation_amnt_xz += ROTATION_SPEED_XZ * time_delta;
             rotation_amnt_xz %= 1.0;
 
+            // get new yz rotation
             rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta;
             rotation_amnt_yz %= 1.0;
             
+            // create the 3 rotation matrices
             let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
             let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
 
+            // multiply the rotations to a final model
             let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
             
             set_uniform_matrix4( gl, shader_program, "modelview", model.data);
