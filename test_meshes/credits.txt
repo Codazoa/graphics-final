@@ -1,0 +1,17 @@
+teapot.obj:
+https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/
+
+cow.obj:
+https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/
+
+teapot_normals.obj:
+https://people.sc.fsu.edu/~jburkardt/data/obj/obj.html
+LGPL license.
+
+stanford bunny (original):
+https://web.archive.org/web/20220615205622/http://graphics.stanford.edu/data/3Dscanrep/
+credits: The Stanford Computer Graphics Laboratory
+
+stanford bunny with UV map and texture: 
+https://github.com/harzival/stanford_bunny_obj_mtl_jpg
+CC0 license
