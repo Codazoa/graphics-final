@@ -109,8 +109,12 @@ class Mesh {
 		
 		let verts = []
 		let indis = []
-		
+
 		// YOUR CODE GOES HERE 
+        let lines = text.split(/\r?\n/);
+        lines.forEach(line => console.log(line.trim()));
+        
+
 		
         return new Mesh( gl, program, verts, indis );
     }
