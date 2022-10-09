@@ -112,10 +112,29 @@ class Mesh {
 
 		// YOUR CODE GOES HERE 
         let lines = text.split(/\r?\n/);
-        lines.forEach(line => console.log(line.trim()));
-        
+        lines.forEach(line => {
+            line = line.trim();
+            let parts_of_line = line.split(/(\s)/);
 
-		
+            // if vertex line, push the values onto verts
+            if ( parts_of_line[0] == 'v' ) {
+                parts_of_line.slice(1, parts_of_line.length).forEach(val => {
+                    if ( val != " " ) {
+                        verts.push(val)
+                    }
+                });
+                // push the vertex color information
+                verts.push( 0.0, 0.0, 0.0, 1.0 );
+            }
+            // if face line, push values onto indis
+            else if ( parts_of_line[0] == 'f' ) {
+                parts_of_line.slice(1, parts_of_line.length).forEach(val => {
+                    if ( val != " " ) {
+                        indis.push( val - 1 ); // faces start indexing at 1 for some reason
+                    }
+                });
+            }
+        });
         return new Mesh( gl, program, verts, indis );
     }
 

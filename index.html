@@ -15,12 +15,12 @@
 
     <script>
 
-        let this_mesh
+        let this_mesh;
 
         // set rotation speeds
-        const ROTATION_SPEED_XY = 0.25;
-        const ROTATION_SPEED_XZ = 0.5;
-        const ROTATION_SPEED_YZ = 0.05;
+        const ROTATION_SPEED_XY = 0.0;
+        const ROTATION_SPEED_XZ = 0.25;
+        const ROTATION_SPEED_YZ = 0.0;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -34,19 +34,6 @@
 
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
-
-        // create vertex interleaved color array
-        // x0,y0,z0,r0,g0,b0,a0,
-        // x1,y1,z1,r1,g1,b1,a1,...
-        // Need to match colors of top right and bot left vertex
-        let verts = [
-            -0.5, -0.25, 0,     1, 0, 0, 1,
-            0, 0.6, 0,          0, 1, 0, 1,
-            0.5, -0.25, 0,      0, 0, 1, 1,
-        ]
-
-        // create and bind the buffer before we start drawing
-        let vertex_buffer = create_and_load_vertex_buffer(gl, verts, gl.STATIC_DRAW);
 
         // vertex shader
         let vertex_source =
@@ -87,8 +74,12 @@
         // setting various render settings
         set_render_params( gl );        
 
-        Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, )
+        Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         
+        function get_mesh( mesh ) {
+            this_mesh = mesh;
+        }
+
         // initializing render function
         requestAnimationFrame( render );
         function render( now ){
@@ -117,32 +108,17 @@
 
             // multiply the rotations to a final model
             let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
+            model = model.mul(Mat4.scale( 0.25, 0.25, 0.25 )); 
             
             set_uniform_matrix4( gl, shader_program, "modelview", model.data);
-            
-            // set buffer for vertex coordinates
-            // 3 coordinate values with 4 * 7 byte stride, coordinates start at 0
-            set_vertex_attrib_to_buffer(
-                gl, shader_program,
-                "coordinates",
-                vertex_buffer, 3,
-                gl.FLOAT, false, 4 * 7, 0
-            );
 
-            // set buffer for vertex colors
-            // 4 color values with 4 * 7 byte stride, colors start 4 * 3 bytes into array
-            set_vertex_attrib_to_buffer(
-                gl, shader_program,
-                "color",
-                vertex_buffer, 4,
-                gl.FLOAT, false, 4 * 7, 4 * 3 
-            );
-
-            // draw the triangles to the screen
-            gl.drawArrays( gl.TRIANGLES, 0, 3 );
+            if( this_mesh != null ){
+                this_mesh.render( gl );
+            }
             
             requestAnimationFrame( render ); 
         }
+
 
 
 

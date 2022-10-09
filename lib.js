@@ -25,10 +25,10 @@ function create_and_load_elements_buffer( gl, data, usage ) {
     let current_array_buf = gl.getParameter( gl.ARRAY_BUFFER_BINDING );
 
     let buf_id = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, buf_id );
-    gl.bufferData( gl.ARRAY_BUFFER, new Uint16Array(data), usage );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, buf_id );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), usage );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, current_array_buf );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_array_buf );
 
     return buf_id;
 }
