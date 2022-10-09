@@ -112,6 +112,7 @@
             
             set_uniform_matrix4( gl, shader_program, "modelview", model.data);
 
+            // wait until the mesh has been loaded to attempt to render it
             if( this_mesh != null ){
                 this_mesh.render( gl );
             }
