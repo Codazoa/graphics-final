@@ -111,11 +111,24 @@ class Mat4 {
     }
 
     static frustum(near, far, top, bottom, left, right) {
+        // calcualte scales
+        let scale_x = 2 * near / ( right - left );
+        let scale_y = 2 * near / ( top - bottom );
+
+        // calculate potential eye shift
+        let tx = ( right + left ) / ( right - left );
+        let ty = ( top + bottom ) / ( top - bottom );
+
+        // calcualte z-mapping
+        const nonlin_c1 = ( 2 * far * near ) / ( far - near );
+        const nonlin_c2 = ( far + near ) / ( far - near );
+        let c1 = nonlin_c1;
+        let c2 = nonlin_c2;
 
         return new Mat4([
-            scale_x, 0, t_x, 0,
-            0, scale_y, t_y, 0,
-            0, 0, c_2, -c_1,
+            scale_x, 0, tx, 0,
+            0, scale_y, ty, 0,
+            0, 0, c2, -c1,
             0, 0, 1, 0
         ]);
     }
