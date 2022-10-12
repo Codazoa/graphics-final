@@ -36,12 +36,12 @@ class Mesh {
             hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0,
             -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0,
             -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0,
-            hwidth, hheight, -hdepth,       1.0, 1.0, 0.0, 1.0,
+            hwidth, hheight, -hdepth,       0.0, 0.0, 0.0, 1.0,
 
-            hwidth, -hheight, hdepth,       1.0, 0.0, 1.0, 1.0,
-            -hwidth, -hheight, hdepth,      0.0, 1.0, 1.0, 1.0,
-            -hwidth, hheight, hdepth,       0.5, 0.5, 1.0, 1.0,
-            hwidth, hheight, hdepth,        1.0, 1.0, 0.5, 1.0,
+            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0,
+            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0,
+            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0,
+            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0,
         ];
 
         let indis = [

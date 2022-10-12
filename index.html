@@ -9,8 +9,8 @@
 <body>
     <canvas id="the-canvas" width="800" height="800"></canvas>
     <script src="lib.js"></script>
-    <script src="matrix_template.js"></script>
-    <script src="vector_template.js"></script>
+    <script src="matrix.js"></script>
+    <script src="vector.js"></script>
     <script src="mesh.js"></script>
 
     <script>
@@ -19,7 +19,7 @@
 
         // set rotation speeds
         const ROTATION_SPEED_XY = 0.0;
-        const ROTATION_SPEED_XZ = 0.25;
+        const ROTATION_SPEED_XZ = 0.125;
         const ROTATION_SPEED_YZ = 0.0;
 
         // set rotation amounts
@@ -74,11 +74,13 @@
         // setting various render settings
         set_render_params( gl );        
 
-        Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
+        // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
         }
+
+        get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
 
         // initializing render function
         function render( now ){

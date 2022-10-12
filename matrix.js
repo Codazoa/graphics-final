@@ -110,6 +110,20 @@ class Mat4 {
         return new Mat4( data );
     }
 
+    static frustum(near, far, top, bottom, left, right) {
+
+        return new Mat4([
+            scale_x, 0, t_x, 0,
+            0, scale_y, t_y, 0,
+            0, 0, c_2, -c_1,
+            0, 0, 1, 0
+        ]);
+    }
+
+    static perspective() {
+
+    }
+
     mul( right ) {
         // return the result of multiplication
         // slicing out basis vectors from left matrix
