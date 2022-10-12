@@ -110,6 +110,16 @@ class Mat4 {
         return new Mat4( data );
     }
 
+    /**
+     * Create a new frustum projection.
+     * 
+     * @param {number} near 
+     * @param {number} far 
+     * @param {number} top 
+     * @param {number} bottom
+     * @param {number} left 
+     * @param {number} right 
+     */
     static frustum(near, far, top, bottom, left, right) {
         // calcualte scales
         let scale_x = 2 * near / ( right - left );
@@ -125,16 +135,24 @@ class Mat4 {
         let c1 = nonlin_c1;
         let c2 = nonlin_c2;
 
-        return new Mat4([
+        return new Mat4( [
             scale_x, 0, tx, 0,
             0, scale_y, ty, 0,
             0, 0, c2, -c1,
             0, 0, 1, 0
-        ]);
+        ] );
     }
 
-    static perspective() {
 
+    static perspective( x_fov, aspect_ratio, near, far ) {
+        let fov_rad = 2 * Math.PI * x_fov;
+
+        let right = Math.tan( fov_rad / 2 ) * near;
+        let left = -right;
+        let top = right * ( 1 / aspect_ratio );
+        let bottom = -top;
+
+        return this.frustum( near, far, top, bottom, left, right ); 
     }
 
     mul( right ) {
