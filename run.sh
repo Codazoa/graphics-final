@@ -1,4 +1,5 @@
 #!/bin/bash
 
-python3 -m http.server &
 firefox "localhost:8000" &
+
+python3 -m http.server 

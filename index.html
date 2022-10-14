@@ -7,20 +7,32 @@
     </style>
 </head>
 <body>
-    <canvas id="the-canvas" width="800" height="800"></canvas>
+    <canvas id="the-canvas" width="1280" height="720"></canvas>
     <script src="lib.js"></script>
-    <script src="matrix_template.js"></script>
-    <script src="vector_template.js"></script>
+    <script src="matrix.js"></script>
+    <script src="vector.js"></script>
     <script src="mesh.js"></script>
 
     <script>
 
         let this_mesh;
 
+        const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
+        const FOV = 90; // FOV in degrees (is converted later)
+        const NEAR = 1; // distance to near plane
+        const FAR = 20; // distance to far plane
+
+        const MODEL_SCALE = 1; // how much to scale the model
+
         // set rotation speeds
-        const ROTATION_SPEED_XY = 0.0;
-        const ROTATION_SPEED_XZ = 0.25;
+        const ROTATION_SPEED_XY = 0.0; 
+        const ROTATION_SPEED_XZ = 0.125;
         const ROTATION_SPEED_YZ = 0.0;
+
+        // set translation amounts
+        const TRANSLATION_X = 0;
+        const TRANSLATION_Y = 0;
+        const TRANSLATION_Z = 3;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -74,11 +86,15 @@
         // setting various render settings
         set_render_params( gl );        
 
-        Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
+        // set the mesh to use
+        // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
+        get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
         }
+
+        let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
 
         // initializing render function
         function render( now ){
@@ -92,23 +108,32 @@
             // get new rotations
             rotation_amnt_xy += ROTATION_SPEED_XY * time_delta;
             rotation_amnt_xz += ROTATION_SPEED_XZ * time_delta;
-            rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta;
+            rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta; 
             
             // keep rotations betweeen 0 and 1
             rotation_amnt_xy %= 1.0;
             rotation_amnt_xz %= 1.0;
-            rotation_amnt_yz %= 1.0;
+            rotation_amnt_yz %= 1.0; 
             
             // create the 3 rotation matrices
             let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
-            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
+            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz ); 
+
+            // move the mesh away from the camera
+            let translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
             
             // multiply the rotations to a final model
             let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
-            model = model.mul(Mat4.scale( 0.25, 0.25, 0.25 )); 
+
+            model = translation.mul( model );
+
+            // scale the model to fit the screen
+            model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
             
-            set_uniform_matrix4( gl, shader_program, "modelview", model.data);
+            let modelview = view.mul( model )
+
+            set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
             
             // wait until the mesh has been loaded to attempt to render it
             if( this_mesh != null ){

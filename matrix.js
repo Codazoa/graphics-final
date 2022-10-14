@@ -110,6 +110,63 @@ class Mat4 {
         return new Mat4( data );
     }
 
+    /**
+     * Create a new frustum projection.
+     * 
+     * @param {number} near 
+     * @param {number} far 
+     * @param {number} top 
+     * @param {number} bottom
+     * @param {number} left 
+     * @param {number} right 
+     */
+    static frustum( near, far, top, bottom, left, right ) {
+        // calcualte scales
+        let scale_x = 2 * near / ( right - left );
+        let scale_y = 2 * near / ( top - bottom );
+
+        // calculate potential eye shift
+        let tx = ( right + left ) / ( right - left );
+        let ty = ( top + bottom ) / ( top - bottom );
+
+        // calcualte z-mapping
+        const nonlin_c1 = 2 * far * near / ( far - near );
+        const nonlin_c2 = ( far + near ) / ( far - near );
+        let c1 = nonlin_c1;
+        let c2 = nonlin_c2;
+
+        return new Mat4( [
+            scale_x,    0,          tx,     0,
+            0,          scale_y,    ty,     0,
+            0,          0,          c2,     -c1,
+            0,          0,          1,      0
+        ] );
+    }
+
+    static perspective( y_fov, aspect_ratio, near, far ) {
+        // convert degrees to turns then to radians
+        let fov_rad = 2 * Math.PI * (y_fov / 360);
+
+        let top = Math.tan( fov_rad / 2 ) * near;
+        let bottom = -top;
+        let right = top * aspect_ratio;
+        let left = -right;
+
+        return this.frustum( near, far, top, bottom, left, right );
+    }
+
+    static perspective_fovx( x_fov, aspect_ratio, near, far ) {
+        // convert degrees to turns then to radians
+        let fov_rad = 2 * Math.PI * (x_fov / 360);
+
+        let right = Math.tan( fov_rad / 2 ) * near;
+        let left = -right;
+        let top = right * ( 1 / aspect_ratio );
+        let bottom = -top;
+
+        return this.frustum( near, far, top, bottom, left, right ); 
+    }
+
     mul( right ) {
         // return the result of multiplication
         // slicing out basis vectors from left matrix
