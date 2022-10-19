@@ -94,7 +94,7 @@
             this_mesh = mesh;
         }
 
-        let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
+        let perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
 
         // initializing render function
         function render( now ){
@@ -130,7 +130,7 @@
             // scale the model to fit the screen
             model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
             
-            let modelview = view.mul( model )
+            let modelview = perspective.mul( model );
 
             set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
             
