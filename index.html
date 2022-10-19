@@ -32,7 +32,7 @@
         // set translation amounts
         const TRANSLATION_X = 0;
         const TRANSLATION_Y = 0;
-        const TRANSLATION_Z = 3;
+        const TRANSLATION_Z = 4;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -123,9 +123,8 @@
             // move the mesh away from the camera
             let translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
             
-            // multiply the rotations to a final model
+            // multiply the rotations and translations to a final model
             let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
-
             model = translation.mul( model );
 
             // scale the model to fit the screen
