@@ -8,6 +8,23 @@
 </head>
 <body>
     <canvas id="the-canvas" width="1280" height="720"></canvas>
+    
+    <div class="slider">
+        <p>FOV</p>
+        <input type="range" id="fovslider" min="10" max="170" value="90" oninput="updateFOV()">
+        <p id="fov">90</p>
+    </div>
+
+    <div class="slider">
+        <p>Translate Y</p>
+        <input type="range" id="yslider" min="-100" max="100" value="0" oninput="updateTranslationY()">
+        <p id="translatey">0</p>
+    </div>
+    
+    
+    
+    
+    
     <script src="lib.js"></script>
     <script src="matrix.js"></script>
     <script src="vector.js"></script>
@@ -15,10 +32,22 @@
 
     <script>
 
+        function updateFOV() {
+            let x = document.getElementById("fovslider").value;
+            FOV = x;
+            document.getElementById("fov").innerHTML = x;
+        }
+
+        function updateTranslationY() {
+            let x = document.getElementById("yslider").value / 10;
+            TRANSLATION_Y = x;
+            document.getElementById("translatey").innerHTML = x;
+        }
+
         let this_mesh;
 
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
-        const FOV = 90; // FOV in degrees (is converted later)
+        var FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 1; // distance to near plane
         const FAR = 20; // distance to far plane
 
@@ -30,9 +59,9 @@
         const ROTATION_SPEED_YZ = 0.0;
 
         // set translation amounts
-        const TRANSLATION_X = 0;
-        const TRANSLATION_Y = 0;
-        const TRANSLATION_Z = 4;
+        var TRANSLATION_X = 0;
+        var TRANSLATION_Y = 0;
+        var TRANSLATION_Z = 4;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -94,8 +123,7 @@
             this_mesh = mesh;
         }
 
-        let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
-
+        
         // initializing render function
         function render( now ){
             requestAnimationFrame( render ); 
@@ -119,7 +147,8 @@
             let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
             let rot_yz = Mat4.rotation_yz( rotation_amnt_yz ); 
-
+            
+            let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
             // move the mesh away from the camera
             let translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
             
