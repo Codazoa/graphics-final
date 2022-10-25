@@ -4,31 +4,77 @@
     <title>cs442-graphics-engine</title>
     <style media="screen">
         #the-canvas {border: 1px solid darkblue}
+
+        .fov-range,
+        .translation-range,
+        .rotation-range {
+            padding-left: 10px;
+            float: left;
+        }
+
     </style>
 </head>
 <body>
     <canvas id="the-canvas" width="1280" height="720"></canvas>
-    
-    <div class="slider">
-        <p>FOV</p>
-        <input type="range" id="fovslider" min="10" max="170" value="90" oninput="updateFOV()">
-        <p id="fov">90</p>
-    </div>
 
-    <div class="slider">
-        <p>Translate Y</p>
-        <input type="range" id="yslider" min="-100" max="100" value="0" oninput="updateTranslationY()">
-        <p id="translatey">0</p>
-    </div>
-    
-    
-    
-    
-    
     <script src="lib.js"></script>
     <script src="matrix.js"></script>
     <script src="vector.js"></script>
     <script src="mesh.js"></script>
+
+    <!-- Creating the sliders below the canvas -->
+    <div class="container">
+        <div class="fov-range">
+            <label for="fov-change">FOV</label>
+            <div class="slider">
+                <label for="fov" class="float-left"></label>
+                <input type="range" id="fovslider" min="10" max="170" value="90" oninput="updateFOV()">
+                <label id="fov" for="" class="float-right">90</label>
+            </div>
+        </div>
+        
+        <div class="translation-range">
+            <label for="translations">Translations</label>
+            <div class="slider">
+                <label for="xslider" class="float-left">X</label>
+                <input type="range" id="xslider" min="-100" max="100" value="0" oninput="updateTranslation()">
+                <label for="" id="xtrans" class="float-right">0</label>
+            </div>
+            
+            <div class="slider">
+                <label for="yslider" class="float-left">Y</label>
+                <input type="range" id="yslider" min="-100" max="100" value="0" oninput="updateTranslation()">
+                <label for="" id="ytrans">0</label>
+            </div>
+            
+            <div class="slider">
+                <label for="zslider">Z</label>
+                <input type="range" id="zslider" min="0" max="100" value="40" oninput="updateTranslation()">
+                <label for="" id="ztrans">4</label>
+            </div>        
+        </div>
+
+        <div class="rotation-range">
+            <label for="rotations">Rotations</label>
+            <div class="slider">
+                <label for="xy-range">XY</label>
+                <input type="range" id="rot_xy" min="-100" max="100" value="0" oninput="updateRotation()">
+                <label for="" id="xy-rot-val">0</label>
+            </div>
+
+            <div class="slider">
+                <label for="xz-range">XZ</label>
+                <input type="range" id="rot_xz" min="-100" max="100" value="0.125" oninput="updateRotation()">
+                <label for="" id="xz-rot-val">0.125</label>
+            </div>
+
+            <div class="slider">
+                <label for="">YZ</label>
+                <input type="range" id="rot_yz" min="-100" max="100" value="0" oninput="updateRotation()">
+                <label for="" id="yz-rot-val">0</label>
+            </div>
+        </div>
+    </div>
 
     <script>
 
@@ -38,25 +84,44 @@
             document.getElementById("fov").innerHTML = x;
         }
 
-        function updateTranslationY() {
-            let x = document.getElementById("yslider").value / 10;
-            TRANSLATION_Y = x;
-            document.getElementById("translatey").innerHTML = x;
+        function updateTranslation() {
+            let x = document.getElementById("xslider").value / 10;
+            let y = document.getElementById("yslider").value / 10;
+            let z = document.getElementById("zslider").value / 10;
+            TRANSLATION_X = x;
+            TRANSLATION_Y = y;
+            TRANSLATION_Z = z;
+            document.getElementById("xtrans").innerHTML = x;
+            document.getElementById("ytrans").innerHTML = y;
+            document.getElementById("ztrans").innerHTML = z;
         }
+
+        function updateRotation() {
+            let xy = document.getElementById("rot_xy").value / 100;
+            let xz = document.getElementById("rot_xz").value / 100;
+            let yz = document.getElementById("rot_yz").value / 100;
+            ROTATION_SPEED_XY = xy;
+            ROTATION_SPEED_XZ = xz;
+            ROTATION_SPEED_YZ = yz;
+            document.getElementById("xy-rot-val").innerHTML = xy;
+            document.getElementById("xz-rot-val").innerHTML = xz;
+            document.getElementById("yz-rot-val").innerHTML = yz;
+        }
+
 
         let this_mesh;
 
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
         var FOV = 90; // FOV in degrees (is converted later)
-        const NEAR = 1; // distance to near plane
+        const NEAR = 0.1; // distance to near plane
         const FAR = 20; // distance to far plane
 
         const MODEL_SCALE = 1; // how much to scale the model
 
         // set rotation speeds
-        const ROTATION_SPEED_XY = 0.0; 
-        const ROTATION_SPEED_XZ = 0.125;
-        const ROTATION_SPEED_YZ = 0.0;
+        var ROTATION_SPEED_XY = 0.0; 
+        var ROTATION_SPEED_XZ = 0.125;
+        var ROTATION_SPEED_YZ = 0.0;
 
         // set translation amounts
         var TRANSLATION_X = 0;
@@ -71,7 +136,7 @@
         let time_delta = 0.0;
         let last_update = performance.now();
 
-        let canvas = document.getElementById('the-canvas');
+        let canvas = document.getElementById("the-canvas");
 
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
