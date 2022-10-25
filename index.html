@@ -8,7 +8,7 @@
         .fov-range,
         .translation-range,
         .rotation-range {
-            padding-left: 10px;
+            padding-left: 30px;
             float: left;
         }
 
@@ -77,36 +77,6 @@
     </div>
 
     <script>
-
-        function updateFOV() {
-            let x = document.getElementById("fovslider").value;
-            FOV = x;
-            document.getElementById("fov").innerHTML = x;
-        }
-
-        function updateTranslation() {
-            let x = document.getElementById("xslider").value / 10;
-            let y = document.getElementById("yslider").value / 10;
-            let z = document.getElementById("zslider").value / 10;
-            TRANSLATION_X = x;
-            TRANSLATION_Y = y;
-            TRANSLATION_Z = z;
-            document.getElementById("xtrans").innerHTML = x;
-            document.getElementById("ytrans").innerHTML = y;
-            document.getElementById("ztrans").innerHTML = z;
-        }
-
-        function updateRotation() {
-            let xy = document.getElementById("rot_xy").value / 100;
-            let xz = document.getElementById("rot_xz").value / 100;
-            let yz = document.getElementById("rot_yz").value / 100;
-            ROTATION_SPEED_XY = xy;
-            ROTATION_SPEED_XZ = xz;
-            ROTATION_SPEED_YZ = yz;
-            document.getElementById("xy-rot-val").innerHTML = xy;
-            document.getElementById("xz-rot-val").innerHTML = xz;
-            document.getElementById("yz-rot-val").innerHTML = yz;
-        }
 
 
         let this_mesh;
@@ -237,7 +207,35 @@
         
         requestAnimationFrame( render );
 
+        function updateFOV() {
+            let x = document.getElementById("fovslider").value;
+            FOV = x;
+            document.getElementById("fov").innerHTML = x;
+        }
 
+        function updateTranslation() {
+            let x = document.getElementById("xslider").value / 10;
+            let y = document.getElementById("yslider").value / 10;
+            let z = document.getElementById("zslider").value / 10;
+            TRANSLATION_X = x;
+            TRANSLATION_Y = y;
+            TRANSLATION_Z = z;
+            document.getElementById("xtrans").innerHTML = x;
+            document.getElementById("ytrans").innerHTML = y;
+            document.getElementById("ztrans").innerHTML = z;
+        }
+
+        function updateRotation() {
+            let xy = document.getElementById("rot_xy").value / 100;
+            let xz = document.getElementById("rot_xz").value / 100;
+            let yz = document.getElementById("rot_yz").value / 100;
+            ROTATION_SPEED_XY = xy;
+            ROTATION_SPEED_XZ = xz;
+            ROTATION_SPEED_YZ = yz;
+            document.getElementById("xy-rot-val").innerHTML = xy;
+            document.getElementById("xz-rot-val").innerHTML = xz;
+            document.getElementById("yz-rot-val").innerHTML = yz;
+        }
 
     </script>
     
