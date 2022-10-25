@@ -50,7 +50,7 @@
             
             <div class="slider">
                 <label for="zslider">Z</label>
-                <input type="range" id="zslider" min="0" max="1000" value="0" oninput="updateTranslation()">
+                <input type="range" id="zslider" min="-1000" max="1000" value="0" oninput="updateTranslation()">
                 <label for="" id="ztrans">0</label>
             </div>        
         </div>
@@ -78,39 +78,37 @@
     </div>
 
     <script>
-
-        
-
         let this_mesh;
 
         const DESIRED_TICK_RATE = 60;
         const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
-        var FOV = 90; // FOV in degrees (is converted later)
+        let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
         const FAR = 100; // distance to far plane
 
         const MODEL_SCALE = 1; // how much to scale the model
 
         // set rotation speeds turns/second
-        var ROTATION_SPEED_XY = 0.0; 
-        var ROTATION_SPEED_XZ = 0.0;
-        var ROTATION_SPEED_YZ = 0.0;
+        let ROTATION_SPEED_XY = 0.0; 
+        let ROTATION_SPEED_XZ = 0.0;
+        let ROTATION_SPEED_YZ = 0.0;
 
         // set translation amounts
-        var TRANSLATION_X = 0;
-        var TRANSLATION_Y = 0;
-        var TRANSLATION_Z = 0;
+        let TRANSLATION_X = 0;
+        let TRANSLATION_Y = 0;
+        let TRANSLATION_Z = 0;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
         let rotation_amnt_xz = 0.0;
         let rotation_amnt_yz = 0.0;
 
-        let time_delta = 0.0;
-        let last_update = performance.now();
-
+        // camera control speeds
         
+
+        let time_delta = 0.0;
+        let last_update = performance.now();        
 
         let canvas = document.getElementById("the-canvas");
         /** @type {WebGLRenderingContext} */
@@ -166,10 +164,7 @@
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
 
-        let listener = new Keys();
-
-
-        listener.start_listening();
+        let listener = Keys.start_listening();
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
@@ -182,43 +177,44 @@
             // update camera
             listener.keys_down_list().forEach( key => {
                 switch( key ){
-                    case "w": { //move camera forward ( increase z translation )
+                    case "KeyW": { // pan camera forward ( increase z translation )
                         break;
                     }
-                    case "a": { //move the camera left ( decrease x translation )
+                    case "KeyA": { // pan camera left ( decrease x translation )
                         break;
                     } 
-                    case "s": { //move the camera backwards ( decrease z translation )
+                    case "KeyS": { // pan camera backwards ( decrease z translation )
                         break;
                     } 
-                    case "d": { //move the camera right ( increase x translation )
-                        console.log("D")
+                    case "KeyD": { // pan camera right ( increase x translation )
                         break;
                     }
-                    case "space": {
+                    case "Space": { // pan camera up ( increase y translation )
                         break;
                     } 
-                    case "c": {
+                    case "KeyC": { // pan camera down ( decrease y translation )
                         break;
                     } 
-                    case "q": {
+                    case "KeyQ": { // roll camera left ( decrease xy rotation )
                         break;
                     } 
-                    case "e": {
+                    case "KeyE": { // roll camera right ( increase xy rotation )
                         break;
                     } 
-                    case "left": {
+                    case "ArrowLeft": { // yaw camera left ( decrease xz rotation )
                         break;
                     } 
-                    case "right": {
+                    case "ArrowRight": { // yaw camera right ( increase xz rotation )
                         break;
                     } 
-                    case "up": {
+                    case "ArrowUp": { // pitch camera down ( decrease yz rotation )
                         break;
                     } 
-                    case "down": {
+                    case "ArrowDown": { // pitch camera up ( increases yz rotation )
                         break;
-                    } 
+                    }
+                    default:
+                        break;
                 }
             });
 
