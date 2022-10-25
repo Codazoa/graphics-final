@@ -21,14 +21,15 @@
     <script src="matrix.js"></script>
     <script src="vector.js"></script>
     <script src="mesh.js"></script>
+    <script src="listener.js"></script>
 
     <!-- Creating the sliders below the canvas -->
-    <div class="container">
+    <div class="slider-container">
         <div class="fov-range">
             <label for="fov-change">FOV</label>
             <div class="slider">
                 <label for="fov" class="float-left"></label>
-                <input type="range" id="fovslider" min="10" max="170" value="90" oninput="updateFOV()">
+                <input type="range" id="fovslider" min="1" max="170" value="90" oninput="updateFOV()">
                 <label id="fov" for="" class="float-right">90</label>
             </div>
         </div>
@@ -49,8 +50,8 @@
             
             <div class="slider">
                 <label for="zslider">Z</label>
-                <input type="range" id="zslider" min="0" max="100" value="40" oninput="updateTranslation()">
-                <label for="" id="ztrans">4</label>
+                <input type="range" id="zslider" min="0" max="1000" value="0" oninput="updateTranslation()">
+                <label for="" id="ztrans">0</label>
             </div>        
         </div>
 
@@ -64,8 +65,8 @@
 
             <div class="slider">
                 <label for="xz-range">XZ</label>
-                <input type="range" id="rot_xz" min="-100" max="100" value="0.125" oninput="updateRotation()">
-                <label for="" id="xz-rot-val">0.125</label>
+                <input type="range" id="rot_xz" min="-100" max="100" value="0" oninput="updateRotation()">
+                <label for="" id="xz-rot-val">0</label>
             </div>
 
             <div class="slider">
@@ -78,25 +79,28 @@
 
     <script>
 
+        
 
         let this_mesh;
 
+        const DESIRED_TICK_RATE = 60;
+        const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
         var FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
-        const FAR = 20; // distance to far plane
+        const FAR = 100; // distance to far plane
 
         const MODEL_SCALE = 1; // how much to scale the model
 
-        // set rotation speeds
+        // set rotation speeds turns/second
         var ROTATION_SPEED_XY = 0.0; 
-        var ROTATION_SPEED_XZ = 0.125;
+        var ROTATION_SPEED_XZ = 0.0;
         var ROTATION_SPEED_YZ = 0.0;
 
         // set translation amounts
         var TRANSLATION_X = 0;
         var TRANSLATION_Y = 0;
-        var TRANSLATION_Z = 4;
+        var TRANSLATION_Z = 0;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -106,8 +110,9 @@
         let time_delta = 0.0;
         let last_update = performance.now();
 
-        let canvas = document.getElementById("the-canvas");
+        
 
+        let canvas = document.getElementById("the-canvas");
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
 
@@ -142,6 +147,13 @@
                 f_color = v_color;
             }
         `;
+
+        let view = new Mat4();
+        let model = new Mat4();
+        let perspective = new Mat4();
+        let modelview = new Mat4();
+
+        setInterval( update, DESIRED_MSPT, performance.now() );
         
         // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
@@ -153,49 +165,102 @@
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
+
+        let listener = new Keys();
+
+
+        listener.start_listening();
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
+        }  
+
+        function update( now ) {
+            time_delta = ( now - last_update ) / 1000;
+            last_update = performance.now();
+
+            // update camera
+            listener.keys_down_list().forEach( key => {
+                switch( key ){
+                    case "w": { //move camera forward ( increase z translation )
+                        break;
+                    }
+                    case "a": { //move the camera left ( decrease x translation )
+                        break;
+                    } 
+                    case "s": { //move the camera backwards ( decrease z translation )
+                        break;
+                    } 
+                    case "d": { //move the camera right ( increase x translation )
+                        console.log("D")
+                        break;
+                    }
+                    case "space": {
+                        break;
+                    } 
+                    case "c": {
+                        break;
+                    } 
+                    case "q": {
+                        break;
+                    } 
+                    case "e": {
+                        break;
+                    } 
+                    case "left": {
+                        break;
+                    } 
+                    case "right": {
+                        break;
+                    } 
+                    case "up": {
+                        break;
+                    } 
+                    case "down": {
+                        break;
+                    } 
+                }
+            });
+
+            // get new rotations
+            rotation_amnt_xy += ROTATION_SPEED_XY / 100;
+            rotation_amnt_xz += ROTATION_SPEED_XZ / 100;
+            rotation_amnt_yz += ROTATION_SPEED_YZ / 100; 
+            
+            // keep rotations betweeen 0 and 1
+            rotation_amnt_xy %= 1.0;
+            rotation_amnt_xz %= 1.0;
+            rotation_amnt_yz %= 1.0; 
+
+            // create the 3 rotation matrices
+            let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
+            let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
+            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
+            
+            perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
+    
+            // move the mesh away from the camera
+            translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
+            
+            // multiply the rotations and translations to a final model
+            model = rot_yz.mul( rot_xz.mul( rot_xy ) );
+            model = translation.mul( model );
+    
+            // scale the model to fit the screen
+            model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
+            modelview = view.mul( model );
+
+            modelview = perspective.mul( modelview )
         }
 
         
         // initializing render function
         function render( now ){
             requestAnimationFrame( render ); 
-            time_delta = ( now - last_update ) / 1000;
-            last_update = performance.now();
             
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
-            
-            // get new rotations
-            rotation_amnt_xy += ROTATION_SPEED_XY * time_delta;
-            rotation_amnt_xz += ROTATION_SPEED_XZ * time_delta;
-            rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta; 
-            
-            // keep rotations betweeen 0 and 1
-            rotation_amnt_xy %= 1.0;
-            rotation_amnt_xz %= 1.0;
-            rotation_amnt_yz %= 1.0; 
-            
-            // create the 3 rotation matrices
-            let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
-            let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
-            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz ); 
-            
-            let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
-            // move the mesh away from the camera
-            let translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
-            
-            // multiply the rotations and translations to a final model
-            let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
-            model = translation.mul( model );
-
-            // scale the model to fit the screen
-            model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
-            
-            let modelview = view.mul( model )
-
+      
             set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
             
             // wait until the mesh has been loaded to attempt to render it
