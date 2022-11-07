@@ -8,7 +8,7 @@
         .fov-range,
         .translation-range,
         .rotation-range {
-            padding-left: 10px;
+            padding-left: 30px;
             float: left;
         }
 
@@ -21,14 +21,15 @@
     <script src="matrix.js"></script>
     <script src="vector.js"></script>
     <script src="mesh.js"></script>
+    <script src="listener.js"></script>
 
     <!-- Creating the sliders below the canvas -->
-    <div class="container">
+    <div class="slider-container">
         <div class="fov-range">
             <label for="fov-change">FOV</label>
             <div class="slider">
                 <label for="fov" class="float-left"></label>
-                <input type="range" id="fovslider" min="10" max="170" value="90" oninput="updateFOV()">
+                <input type="range" id="fovslider" min="1" max="170" value="90" oninput="updateFOV()">
                 <label id="fov" for="" class="float-right">90</label>
             </div>
         </div>
@@ -49,8 +50,8 @@
             
             <div class="slider">
                 <label for="zslider">Z</label>
-                <input type="range" id="zslider" min="0" max="100" value="40" oninput="updateTranslation()">
-                <label for="" id="ztrans">4</label>
+                <input type="range" id="zslider" min="-1000" max="1000" value="0" oninput="updateTranslation()">
+                <label for="" id="ztrans">0</label>
             </div>        
         </div>
 
@@ -64,8 +65,8 @@
 
             <div class="slider">
                 <label for="xz-range">XZ</label>
-                <input type="range" id="rot_xz" min="-100" max="100" value="0.125" oninput="updateRotation()">
-                <label for="" id="xz-rot-val">0.125</label>
+                <input type="range" id="rot_xz" min="-100" max="100" value="0" oninput="updateRotation()">
+                <label for="" id="xz-rot-val">0</label>
             </div>
 
             <div class="slider">
@@ -77,67 +78,39 @@
     </div>
 
     <script>
-
-        function updateFOV() {
-            let x = document.getElementById("fovslider").value;
-            FOV = x;
-            document.getElementById("fov").innerHTML = x;
-        }
-
-        function updateTranslation() {
-            let x = document.getElementById("xslider").value / 10;
-            let y = document.getElementById("yslider").value / 10;
-            let z = document.getElementById("zslider").value / 10;
-            TRANSLATION_X = x;
-            TRANSLATION_Y = y;
-            TRANSLATION_Z = z;
-            document.getElementById("xtrans").innerHTML = x;
-            document.getElementById("ytrans").innerHTML = y;
-            document.getElementById("ztrans").innerHTML = z;
-        }
-
-        function updateRotation() {
-            let xy = document.getElementById("rot_xy").value / 100;
-            let xz = document.getElementById("rot_xz").value / 100;
-            let yz = document.getElementById("rot_yz").value / 100;
-            ROTATION_SPEED_XY = xy;
-            ROTATION_SPEED_XZ = xz;
-            ROTATION_SPEED_YZ = yz;
-            document.getElementById("xy-rot-val").innerHTML = xy;
-            document.getElementById("xz-rot-val").innerHTML = xz;
-            document.getElementById("yz-rot-val").innerHTML = yz;
-        }
-
-
         let this_mesh;
 
+        const DESIRED_TICK_RATE = 60;
+        const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
-        var FOV = 90; // FOV in degrees (is converted later)
+        let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
-        const FAR = 20; // distance to far plane
+        const FAR = 100; // distance to far plane
 
         const MODEL_SCALE = 1; // how much to scale the model
 
-        // set rotation speeds
-        var ROTATION_SPEED_XY = 0.0; 
-        var ROTATION_SPEED_XZ = 0.125;
-        var ROTATION_SPEED_YZ = 0.0;
+        // set rotation speeds turns/second
+        let ROTATION_SPEED_XY = 0.0; 
+        let ROTATION_SPEED_XZ = 0.0;
+        let ROTATION_SPEED_YZ = 0.0;
 
         // set translation amounts
-        var TRANSLATION_X = 0;
-        var TRANSLATION_Y = 0;
-        var TRANSLATION_Z = 4;
+        let TRANSLATION_X = 0;
+        let TRANSLATION_Y = 0;
+        let TRANSLATION_Z = 0;
 
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
         let rotation_amnt_xz = 0.0;
         let rotation_amnt_yz = 0.0;
 
+        // camera control speeds
+        
+
         let time_delta = 0.0;
-        let last_update = performance.now();
+        let last_update = performance.now();        
 
         let canvas = document.getElementById("the-canvas");
-
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
 
@@ -172,6 +145,13 @@
                 f_color = v_color;
             }
         `;
+
+        let view = new Mat4();
+        let model = new Mat4();
+        let perspective = new Mat4();
+        let modelview = new Mat4();
+
+        setInterval( update, DESIRED_MSPT, performance.now() );
         
         // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
@@ -183,50 +163,99 @@
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
+
+        let listener = Keys.start_listening();
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
-        }
+        }  
 
-        let perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
-
-        // initializing render function
-        function render( now ){
-            requestAnimationFrame( render ); 
+        function update( now ) {
             time_delta = ( now - last_update ) / 1000;
             last_update = performance.now();
-            
-            // clear screen
-            gl.clear( gl.COLOR_BUFFER_BIT );
-            
+
+            // update camera
+            listener.keys_down_list().forEach( key => {
+                switch( key ){
+                    case "KeyW": { // pan camera forward ( increase z translation )
+                        break;
+                    }
+                    case "KeyA": { // pan camera left ( decrease x translation )
+                        break;
+                    } 
+                    case "KeyS": { // pan camera backwards ( decrease z translation )
+                        break;
+                    } 
+                    case "KeyD": { // pan camera right ( increase x translation )
+                        break;
+                    }
+                    case "Space": { // pan camera up ( increase y translation )
+                        break;
+                    } 
+                    case "KeyC": { // pan camera down ( decrease y translation )
+                        break;
+                    } 
+                    case "KeyQ": { // roll camera left ( decrease xy rotation )
+                        break;
+                    } 
+                    case "KeyE": { // roll camera right ( increase xy rotation )
+                        break;
+                    } 
+                    case "ArrowLeft": { // yaw camera left ( decrease xz rotation )
+                        break;
+                    } 
+                    case "ArrowRight": { // yaw camera right ( increase xz rotation )
+                        break;
+                    } 
+                    case "ArrowUp": { // pitch camera down ( decrease yz rotation )
+                        break;
+                    } 
+                    case "ArrowDown": { // pitch camera up ( increases yz rotation )
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            });
+
             // get new rotations
-            rotation_amnt_xy += ROTATION_SPEED_XY * time_delta;
-            rotation_amnt_xz += ROTATION_SPEED_XZ * time_delta;
-            rotation_amnt_yz += ROTATION_SPEED_YZ * time_delta; 
+            rotation_amnt_xy += ROTATION_SPEED_XY / 100;
+            rotation_amnt_xz += ROTATION_SPEED_XZ / 100;
+            rotation_amnt_yz += ROTATION_SPEED_YZ / 100; 
             
             // keep rotations betweeen 0 and 1
             rotation_amnt_xy %= 1.0;
             rotation_amnt_xz %= 1.0;
             rotation_amnt_yz %= 1.0; 
-            
+
             // create the 3 rotation matrices
             let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
-            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz ); 
+            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
             
-            let view = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
+            perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
+    
             // move the mesh away from the camera
-            let translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
+            translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
             
             // multiply the rotations and translations to a final model
-            let model = rot_yz.mul( rot_xz.mul( rot_xy ) );
+            model = rot_yz.mul( rot_xz.mul( rot_xy ) );
             model = translation.mul( model );
-
+    
             // scale the model to fit the screen
             model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
-            
-            let modelview = perspective.mul( model );
+            modelview = view.mul( model );
 
+            modelview = perspective.mul( modelview )
+        }
+
+        // initializing render function
+        function render( now ){
+            requestAnimationFrame( render ); 
+            
+            // clear screen
+            gl.clear( gl.COLOR_BUFFER_BIT );
+      
             set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
             
             // wait until the mesh has been loaded to attempt to render it
@@ -238,7 +267,35 @@
         
         requestAnimationFrame( render );
 
+        function updateFOV() {
+            let x = document.getElementById("fovslider").value;
+            FOV = x;
+            document.getElementById("fov").innerHTML = x;
+        }
 
+        function updateTranslation() {
+            let x = document.getElementById("xslider").value / 10;
+            let y = document.getElementById("yslider").value / 10;
+            let z = document.getElementById("zslider").value / 10;
+            TRANSLATION_X = x;
+            TRANSLATION_Y = y;
+            TRANSLATION_Z = z;
+            document.getElementById("xtrans").innerHTML = x;
+            document.getElementById("ytrans").innerHTML = y;
+            document.getElementById("ztrans").innerHTML = z;
+        }
+
+        function updateRotation() {
+            let xy = document.getElementById("rot_xy").value / 100;
+            let xz = document.getElementById("rot_xz").value / 100;
+            let yz = document.getElementById("rot_yz").value / 100;
+            ROTATION_SPEED_XY = xy;
+            ROTATION_SPEED_XZ = xz;
+            ROTATION_SPEED_YZ = yz;
+            document.getElementById("xy-rot-val").innerHTML = xy;
+            document.getElementById("xz-rot-val").innerHTML = xz;
+            document.getElementById("yz-rot-val").innerHTML = yz;
+        }
 
     </script>
     
