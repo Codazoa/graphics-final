@@ -67,6 +67,73 @@ class Mesh {
         return new Mesh( gl, program, verts, indis );
     }
 
+    // create a box with completely separeate faces
+    static box_six_sided( gl, program, width, height, depth ) {
+        let hwidth = width / 2.0;
+        let hheight = height / 2.0;
+        let hdepth = depth / 2.0;
+
+        let verts = [
+            // front
+            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 0    F0
+            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 1    F1
+            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 2    F2
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 3    F3
+
+            // right
+            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 4    R0
+            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 5    R1
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 6    R2
+            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 7    R3
+
+            // back
+            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 8    B0
+            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 9    B1
+            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 10   B2
+            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 11   B3
+
+            // left
+            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 12   L0
+            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 13   L1
+            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 14   L2
+            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 15   L3
+
+            // top
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 16   t0
+            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 17   t1
+            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 18   t2
+            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 19   t3
+
+            // bottom
+            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 20   b0
+            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 21   b1
+            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 22   b2
+            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 23   b3
+        ];
+
+        let indis = [
+            // clockwise winding
+            /*
+            0, 1, 2, 2, 3, 0, 
+            4, 0, 3, 3, 7, 4, 
+            5, 4, 7, 7, 6, 5, 
+            1, 5, 6, 6, 2, 1,
+            3, 2, 6, 6, 7, 3,
+            4, 5, 1, 1, 0, 4,
+            */
+
+            // counter-clockwise winding
+            0, 3, 2, 2, 1, 0,
+            4, 7, 6, 6, 5, 4,
+            8, 11, 10, 10, 9, 8,
+            12, 15, 14, 14, 13, 12,
+            16, 19, 18, 18, 17, 16,
+            21, 22, 23, 23, 20, 21,            
+        ];
+
+        return new Mesh( gl, program, verts, indis );
+    }
+
 
     /**
      * Render the mesh. Does NOT preserve array/index buffer or program bindings! 
