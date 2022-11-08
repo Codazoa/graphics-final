@@ -154,18 +154,6 @@
 
         image.src = 'tex/texture_map.png';
 
-        function on_load() {
-            let tex = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_2D, tex )
-            gl.texImage2D( 
-                gl.TEXTURE_2D, 0, gl.RGBA,
-                gl.RGBA, gl.UNSIGNED_BYTE,
-                image
-            );
-            gl.generateMipmap( gl.TEXTURE_2D );
-            
-        }
-
         let listener = Keys.start_listening();
         
         function get_mesh( mesh ) {
