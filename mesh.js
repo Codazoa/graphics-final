@@ -1,5 +1,5 @@
 
-const VERTEX_STRIDE = 28;
+const VERTEX_STRIDE = 36;
 
 class Mesh {
     /** 
@@ -75,40 +75,40 @@ class Mesh {
 
         let verts = [
             // front
-            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 0    F0
-            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 1    F1
-            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 2    F2
-            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 3    F3
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.25, 0.5,  // 0    F0
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     0.0,  0.5,  // 1    F1
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.0,  0.25, // 2    F2
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.25, 0.25, // 3    F3
 
             // right
-            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 4    R0
-            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 5    R1
-            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 6    R2
-            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 7    R3
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 4    R0
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.25, 0.5,  // 5    R1
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.25, 0.25, // 6    R2
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 7    R3
 
             // back
-            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 8    B0
-            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 9    B1
-            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 10   B2
-            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 11   B3
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 8    B0
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 9    B1
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 10   B2
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 11   B3
 
             // left
-            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 12   L0
-            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 13   L1
-            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 14   L2
-            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 15   L3
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     1.0,  0.5,  // 12   L0
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 13   L1
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 14   L2
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     1.0,  0.25, // 15   L3
 
             // top
-            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0, // 16   t0
-            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0, // 17   t1
-            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0, // 18   t2
-            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0, // 19   t3
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 16   t0
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 17   t1
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.0,  // 18   t2
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.75, 0.0,  // 19   t3
 
             // bottom
-            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0, // 20   b0
-            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0, // 21   b1
-            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0, // 22   b2
-            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0, // 23   b3
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.75, // 20   b0
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     0.5,  0.75, // 21   b1
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 22   b2
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 23   b3
         ];
 
         let indis = [
@@ -154,12 +154,19 @@ class Mesh {
             this.verts, 3, 
             gl.FLOAT, false, VERTEX_STRIDE, 0 
         );
-
+        
         set_vertex_attrib_to_buffer( 
             gl, this.program, 
             "color", 
             this.verts, 4, 
             gl.FLOAT, false, VERTEX_STRIDE, 12
+        );
+
+        set_vertex_attrib_to_buffer(
+            gl, this.program,
+            "uv",
+            this.verts, 2,
+            gl.FLOAT, false, VERTEX_STRIDE, 28
         );
 
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );

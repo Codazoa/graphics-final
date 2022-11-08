@@ -22,6 +22,7 @@
     <script src="mesh.js"></script>
     <script src="listener.js"></script>
     <script src="camera.js"></script>
+    <script src="texture.js"></script>
 
     
     <script>
@@ -79,12 +80,15 @@
         
         in vec3 coordinates;
         in vec4 color;
+        in vec2 uv;
         
         out vec4 v_color;
+        out vec2 v_uv;
         
         void main(void){
             gl_Position = modelview * vec4( coordinates, 1.0 );
             v_color = color;
+            v_uv = uv;
         }
         `;
         
@@ -92,13 +96,16 @@
         let fragment_source =
         `   #version 300 es
         precision mediump float;
+
+        uniform sampler2D tex_0;
         
         in vec4 v_color;
+        in vec2 v_uv;
         
         out vec4 f_color;
         
         void main(void){
-            f_color = v_color;
+            f_color = texture( tex_0, v_uv ) * v_color;
         }
         `;
         
@@ -114,17 +121,57 @@
         gl.useProgram( shader_program );
         
         // setting various render settings
-        set_render_params( gl );        
+        set_render_params( gl );     
+
         
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         get_mesh( Mesh.box_six_sided(gl, shader_program, 1, 1, 1) );
         
+        // texture stuff
+        let tex = gl.createTexture();
+
+        gl.bindTexture( gl.TEXTURE_2D, tex );
+        gl.texImage2D( 
+            gl.TEXTURE_2D, 0, gl.RGBA,
+            256, 256, 0,
+            gl.RGBA, gl.UNSIGNED_BYTE,
+            xor_texture(256)
+        );
+        gl.generateMipmap( gl.TEXTURE_2D );
+
+        // set up image
+        let image = new Image();
+        image.onload = function () {
+            gl.bindTexture( gl.TEXTURE_2D, tex )
+            gl.texImage2D( 
+                gl.TEXTURE_2D, 0, gl.RGBA,
+                gl.RGBA, gl.UNSIGNED_BYTE,
+                image
+            );
+            gl.generateMipmap( gl.TEXTURE_2D );
+        };
+
+        image.src = 'tex/texture_map.png';
+
+        function on_load() {
+            let tex = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_2D, tex )
+            gl.texImage2D( 
+                gl.TEXTURE_2D, 0, gl.RGBA,
+                gl.RGBA, gl.UNSIGNED_BYTE,
+                image
+            );
+            gl.generateMipmap( gl.TEXTURE_2D );
+            
+        }
+
         let listener = Keys.start_listening();
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
         }
+        
 
         let key_bindings = {
             "KeyW": function() { camera.pan(FORWARD) },
