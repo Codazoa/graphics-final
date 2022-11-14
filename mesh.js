@@ -1,5 +1,6 @@
 
 const VERTEX_STRIDE = 36;
+const TAU = 2 * Math.PI;
 
 class Mesh {
     /** 
@@ -63,6 +64,52 @@ class Mesh {
             3, 7, 6, 6, 2, 3,
             4, 0, 1, 1, 5, 4,
         ];
+
+        return new Mesh( gl, program, verts, indis );
+    }
+
+    static make_uv_sphere( gl, program, subdivs, material ) {
+        let verts = [];
+        let indis = [];
+
+        // generating verts
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y_turns = layer / subdivs / 2;
+            let y = Math.cos( y_turns * TAU ) / 2;
+
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
+    
+                let turns = subdiv / subdivs;
+                let rads = turns * TAU;
+    
+                let x = (Math.cos( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
+                let z = (Math.sin( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
+    
+                verts.push( x, y, z );
+                verts.push( 1, 1, 1, 1 );
+    
+                let u = subdiv / subdivs;
+                let v = layer / subdivs;
+    
+                verts.push( u, v );
+            }
+        }  
+
+        // generating indis
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs;
+
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
+                // calculate the 2 triangles
+                let current_vert = layer_start_vert + subdiv;
+                let next_layer_vert = current_vert + subdivs + 1;
+                
+                let i0 = next_layer_vert;
+                let i1 = i0 + 1;
+                let i2 = current_vert + 1;
+                indis.push( current_vert, i0, i1, i1, i2, current_vert);
+            }
+        }
 
         return new Mesh( gl, program, verts, indis );
     }

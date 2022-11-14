@@ -126,7 +126,7 @@
         
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
-        get_mesh( Mesh.box_six_sided(gl, shader_program, 1, 1, 1) );
+        get_mesh( Mesh.make_uv_sphere(gl, shader_program, 20, null) );
         
         // texture stuff
         let tex = gl.createTexture();
@@ -152,7 +152,7 @@
             gl.generateMipmap( gl.TEXTURE_2D );
         };
 
-        image.src = 'tex/texture_map.png';
+        image.src = 'tex/grass_lawn_seamless.png';
 
         let listener = Keys.start_listening();
         
