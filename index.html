@@ -152,7 +152,7 @@
             gl.generateMipmap( gl.TEXTURE_2D );
         };
 
-        image.src = 'tex/grass_lawn_seamless.png';
+        image.src = 'tex/metal_scale.png';
 
         let listener = Keys.start_listening();
         
@@ -212,8 +212,6 @@
             
             view = camera.get_view();
 
-            // scale the model to fit the screen
-            //model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
             modelview = view.mul( model );
             
             modelview = perspective.mul( modelview )
