@@ -23,6 +23,7 @@
     <script src="listener.js"></script>
     <script src="camera.js"></script>
     <script src="texture.js"></script>
+    <script src="shaders.js"></script>
 
     
     <script>
@@ -70,44 +71,6 @@
         let canvas = document.getElementById("the-canvas");
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
-        
-        // vertex shader
-        let vertex_source =
-        `   #version 300 es
-        precision mediump float;
-        
-        uniform mat4 modelview;
-        
-        in vec3 coordinates;
-        in vec4 color;
-        in vec2 uv;
-        
-        out vec4 v_color;
-        out vec2 v_uv;
-        
-        void main(void){
-            gl_Position = modelview * vec4( coordinates, 1.0 );
-            v_color = color;
-            v_uv = uv;
-        }
-        `;
-        
-        // fragment shader
-        let fragment_source =
-        `   #version 300 es
-        precision mediump float;
-
-        uniform sampler2D tex_0;
-        
-        in vec4 v_color;
-        in vec2 v_uv;
-        
-        out vec4 f_color;
-        
-        void main(void){
-            f_color = texture( tex_0, v_uv ) * v_color;
-        }
-        `;
         
         // let view = new Camera( 0, 0, 2 );
         let camera = new Camera( 0, 0, -2, CAMERA_SPEED );
