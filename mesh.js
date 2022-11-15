@@ -81,7 +81,7 @@ class Mesh {
     
                 let turns = subdiv / subdivs;
                 let rads = turns * TAU;
-    
+
                 let x = (Math.cos( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
                 let z = (Math.sin( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
     
@@ -93,17 +93,16 @@ class Mesh {
     
                 verts.push( u, v );
             }
-        }  
+        }
 
         // generating indis
-        for( let layer = 0; layer <= subdivs; layer++ ) {
-            let layer_start_vert = layer * subdivs;
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
 
             for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
                 // calculate the 2 triangles
                 let current_vert = layer_start_vert + subdiv;
                 let next_layer_vert = current_vert + subdivs + 1;
-                
                 let i0 = next_layer_vert;
                 let i1 = i0 + 1;
                 let i2 = current_vert + 1;
