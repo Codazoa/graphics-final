@@ -167,3 +167,104 @@ function set_uniform_matrix4( gl, program, name, data ){
     gl.uniformMatrix4fv( loc, true, data );
 }
 
+ /** 
+  * Creates a new index buffer and loads it full of the given data.
+  * Preserves bound buffer.
+  * 
+  * @param {WebGLRenderingContext} gl  
+  * @param {number[]} data
+  * @param {number} usage
+  * 
+  * @returns {WebGlBuffer}
+ */
+  function create_and_load_elements_buffer(gl, data, usage) {
+    let current_buf = gl.getParameter( gl.ELEMENT_ARRAY_BUFFER_BINDING );
+    
+    let buf_id = gl.createBuffer();
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, buf_id );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), usage );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, current_buf );
+    
+    return buf_id;
+}
+
+
+/**
+ * Set the built-in shader uniform to texture unit 0.
+ * (this isn't strictly necessary, but would if we wanted to use multi-texturing)
+ * @param {WebGLRenderingContext} gl 
+ */
+function bind_texture_samplers( gl, program, sampler_name ) {
+    const old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, sampler_name );
+    gl.uniform1i( loc, 0 );
+
+    gl.useProgram( old_prog );
+}
+
+/**
+ * Sets uniform data for a 3 component vector.
+ * @param {WebGLRenderingContext} gl 
+ * @param {WebGLProgram} program 
+ * @param {string} name 
+ */
+function set_uniform_vec3( gl, program, name, x, y, z ) {
+    // let old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    // gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, name );
+
+    gl.uniform3f( loc, x, y, z );
+
+    // gl.useProgram( old_prog );
+}
+
+/**
+ * Set a single float value
+ * @param {*} gl 
+ * @param {*} program 
+ * @param {*} name 
+ * @param {*} x 
+ */
+function set_uniform_scalar( gl, program, name, x ){
+    // let old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    // gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, name );
+    gl.uniform1f( loc, x );
+
+    // gl.useProgram( old_prog );
+}
+
+/**
+ * Sets uniform data for an array of 3 component vectors.
+ * @param {WebGLRenderingContext} gl 
+ * @param {WebGLProgram} program 
+ * @param {string} name 
+ * @param {number[]} data must be flattened
+ */
+function set_uniform_vec3_array( gl, program, name, data ) {
+    // let old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    // gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, name );
+
+    gl.uniform3fv( loc, data )
+
+    // gl.useProgram( old_prog );
+}
+
+function set_uniform_int( gl, program, name, data ) {
+    // let old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    // gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, name );
+
+    gl.uniform1i( loc, data );
+
+    // gl.useProgram( old_prog );
+}
+

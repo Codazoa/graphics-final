@@ -1,5 +1,5 @@
 
-const VERTEX_STRIDE = 36;
+const VERTEX_STRIDE = 48;
 const TAU = 2 * Math.PI;
 
 class Mesh {
@@ -92,6 +92,11 @@ class Mesh {
                 let v = layer / subdivs;
     
                 verts.push( u, v );
+
+                let norm = new Vec4(x, y, z, 1);
+                norm = norm.norm();
+
+                verts.push(norm.x, norm.y, norm.z);
             }
         }
 
@@ -213,6 +218,13 @@ class Mesh {
             "uv",
             this.verts, 2,
             gl.FLOAT, false, VERTEX_STRIDE, 28
+        );
+
+        set_vertex_attrib_to_buffer(
+            gl, this.program,
+            "normal",
+            this.verts, 3,
+            gl.FLOAT, false, VERTEX_STRIDE, 36
         );
 
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );

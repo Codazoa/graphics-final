@@ -64,9 +64,17 @@
         
         // camera control speeds
         let CAMERA_SPEED = 0.002
+
+        // light settings
+        const ambient = 0.25;
+        const diffuse = 1;
+        const specular = 3;
+        const shininess = 7;
+        const sun_dir = new Vec4( 0.8, 1, 0, 0 );
+        const sun_color = new Vec4( 0.97, 0.70, 0.09, 1.0 );
         
         let time_delta = 0.0;
-        let last_update = performance.now();        
+        let last_update = performance.now();       
         
         let canvas = document.getElementById("the-canvas");
         /** @type {WebGLRenderingContext} */
@@ -75,7 +83,7 @@
         // let view = new Camera( 0, 0, 2 );
         let camera = new Camera( 0, 0, -2, CAMERA_SPEED );
         let view = camera.get_view();
-        let model = new Mat4();
+        // let model = new Thing(0, 0, 0);
         let perspective = new Mat4();
         let modelview = new Mat4();
         
@@ -95,6 +103,14 @@
         let tex = gl.createTexture();
 
         gl.bindTexture( gl.TEXTURE_2D, tex );
+        set_uniform_scalar( gl, shader_program, 'mat_ambient', ambient );
+        set_uniform_scalar( gl, shader_program, 'mat_diffuse', diffuse ); 
+        set_uniform_scalar( gl, shader_program, 'mat_specular', specular );
+        set_uniform_scalar( gl, shader_program, 'mat_shininess', shininess );
+        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+        set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
+
         gl.texImage2D( 
             gl.TEXTURE_2D, 0, gl.RGBA,
             256, 256, 0,
@@ -106,7 +122,7 @@
         // set up image
         let image = new Image();
         image.onload = function () {
-            gl.bindTexture( gl.TEXTURE_2D, tex )
+            gl.bindTexture( gl.TEXTURE_2D, tex );
             gl.texImage2D( 
                 gl.TEXTURE_2D, 0, gl.RGBA,
                 gl.RGBA, gl.UNSIGNED_BYTE,
@@ -148,6 +164,8 @@
                     key_bindings[key]();
                 }
             });
+
+            set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
                 
             // get new rotations
             rotation_amnt_xy += ROTATION_SPEED_XY / DESIRED_TICK_RATE;
