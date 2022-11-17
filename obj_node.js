@@ -1,9 +1,11 @@
-class Thing {
-    constructor( x, y, z, material) { // start thing in certain location
-        this.position = new Vec4( x, y, z, 1 );
+class Node {
+    constructor() { // start thing in certain location
+        this.position = new Vec4( 0, 0, 0, 1 );
+        this.scale = new Vec4( 1, 1, 1, 1 );
         this.pitch_amt = 0;
         this.yaw_amt = 0;
         this.roll_amt = 0;
+        this.data = data;
     }
 
     get_matrix() {

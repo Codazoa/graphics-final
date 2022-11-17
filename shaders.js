@@ -13,6 +13,9 @@ uniform vec3 camera_pos;
 uniform vec3 sun_dir;
 uniform vec3 sun_color;
 
+uniform vec3 point_light_dir;
+uniform vec3 point_light_color;
+
 in vec3 coordinates;
 in vec4 color;
 in vec2 uv;
@@ -43,12 +46,19 @@ vec3 spec_color(vec3 normal, vec3 light_dir, vec3 light_color, float mat_specula
 
 void main(void){
     gl_Position = modelview * vec4( coordinates, 1.0 );
+    float L = 1.0;
 
     vec3 sun_diff = diff_color( normal, sun_dir, sun_color, mat_diffuse );
     vec3 sun_spec = spec_color( normal, sun_dir, sun_color, mat_specular, mat_shininess );
+    vec3 point_diff = diff_color( normal, point_light_dir, point_light_color, mat_diffuse );
+    vec3 point_spec = spec_color( normal, point_light_dir, point_light_color, mat_specular, mat_shininess );
     vec4 ambient_color = vec4( mat_ambient, mat_ambient, mat_ambient, 1.0 );
 
-    v_color = (ambient_color + vec4(sun_diff, 1.0) + vec4(sun_spec, 1.0)) * color;
+    float dist = length(point_light_dir - coordinates);
+    float attenuation = 1.0/(L * dist);
+
+    v_color = (ambient_color + vec4(sun_diff, 1.0) + vec4(sun_spec, 1.0) +
+        (vec4(point_diff, 1.0) + vec4(point_spec, 1.0)) * attenuation) * color;
     v_uv = uv;
 }
 `;

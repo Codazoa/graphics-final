@@ -24,8 +24,8 @@
     <script src="camera.js"></script>
     <script src="texture.js"></script>
     <script src="shaders.js"></script>
+    <script src="material.js"></script>
 
-    
     <script>
         let this_mesh;
 
@@ -44,8 +44,6 @@
         let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
         const FAR = 100; // distance to far plane
-        
-        const MODEL_SCALE = 1; // how much to scale the model
         
         // set rotation speeds turns/second
         let ROTATION_SPEED_XY = 0.0; 
@@ -67,11 +65,15 @@
 
         // light settings
         const ambient = 0.25;
-        const diffuse = 1;
-        const specular = 3;
-        const shininess = 7;
-        const sun_dir = new Vec4( 0.8, 1, 0, 0 );
-        const sun_color = new Vec4( 0.97, 0.70, 0.09, 1.0 );
+        const diffuse = 1.0;
+        const specular = 2.0;
+        const shininess = 4.0;
+
+        const sun_dir = new Vec4( 0.0, 1.0, 0.0, 0.0 );
+        const sun_color = new Vec4( 1.0, 1.0, 1.0, 1.0 );
+
+        const point_light_dir = new Vec4( 1.0, 0.0, 0.0, 0.0 );
+        const point_light_color = new Vec4( 1.0, 0.0, 0.0, 1.0 );
         
         let time_delta = 0.0;
         let last_update = performance.now();       
@@ -83,7 +85,6 @@
         // let view = new Camera( 0, 0, 2 );
         let camera = new Camera( 0, 0, -2, CAMERA_SPEED );
         let view = camera.get_view();
-        // let model = new Thing(0, 0, 0);
         let perspective = new Mat4();
         let modelview = new Mat4();
         
@@ -94,10 +95,9 @@
         // setting various render settings
         set_render_params( gl );     
 
-        
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
-        get_mesh( Mesh.make_uv_sphere(gl, shader_program, 20, null) );
+        get_mesh( Mesh.make_uv_sphere(gl, shader_program, 16, null) );
         
         // texture stuff
         let tex = gl.createTexture();
@@ -110,6 +110,9 @@
         set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
         set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
         set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
+
+        set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
 
         gl.texImage2D( 
             gl.TEXTURE_2D, 0, gl.RGBA,
