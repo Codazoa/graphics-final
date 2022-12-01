@@ -1,5 +1,6 @@
 
-const VERTEX_STRIDE = 28;
+const VERTEX_STRIDE = 48;
+const TAU = 2 * Math.PI;
 
 class Mesh {
     /** 
@@ -10,13 +11,14 @@ class Mesh {
      * @param {number[]} vertices
      * @param {number[]} indices
     */
-    constructor( gl, program, vertices, indices ) {
+    constructor( gl, program, vertices, indices, material ) {
         this.verts = create_and_load_vertex_buffer( gl, vertices, gl.STATIC_DRAW );
         this.indis = create_and_load_elements_buffer( gl, indices, gl.STATIC_DRAW );
 
         this.n_verts = vertices.length;
         this.n_indis = indices.length;
         this.program = program;
+        this.material = material;
     }
 
     /**
@@ -67,6 +69,123 @@ class Mesh {
         return new Mesh( gl, program, verts, indis );
     }
 
+    static make_uv_sphere( gl, program, subdivs, material ) {
+        let verts = [];
+        let indis = [];
+
+        // generating verts
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y_turns = layer / subdivs / 2;
+            let y = Math.cos( y_turns * TAU ) / 2;
+
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
+    
+                let turns = subdiv / subdivs;
+                let rads = turns * TAU;
+
+                let x = (Math.cos( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
+                let z = (Math.sin( rads ) / 2) * Math.sqrt( 1 - Math.pow( 2*y, 2 ));
+    
+                verts.push( x, y, z );
+                verts.push( 1, 1, 1, 1 );
+    
+                let u = subdiv / subdivs;
+                let v = layer / subdivs;
+    
+                verts.push( u, v );
+
+                let norm = new Vec4(x, y, z, 1);
+                norm = norm.norm();
+
+                verts.push(norm.x, norm.y, norm.z);
+            }
+        }
+
+        // generating indis
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
+
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
+                // calculate the 2 triangles
+                let current_vert = layer_start_vert + subdiv;
+                let next_layer_vert = current_vert + subdivs + 1;
+                let i0 = next_layer_vert;
+                let i1 = i0 + 1;
+                let i2 = current_vert + 1;
+                indis.push( current_vert, i0, i1, i1, i2, current_vert);
+            }
+        }
+
+        return new Mesh( gl, program, verts, indis );
+    }
+
+    // create a box with completely separeate faces
+    static box_six_sided( gl, program, width, height, depth ) {
+        let hwidth = width / 2.0;
+        let hheight = height / 2.0;
+        let hdepth = depth / 2.0;
+
+        let verts = [
+            // front
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.25, 0.5,  // 0    F0
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     0.0,  0.5,  // 1    F1
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.0,  0.25, // 2    F2
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.25, 0.25, // 3    F3
+
+            // right
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 4    R0
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.25, 0.5,  // 5    R1
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.25, 0.25, // 6    R2
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 7    R3
+
+            // back
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 8    B0
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 9    B1
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 10   B2
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 11   B3
+
+            // left
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     1.0,  0.5,  // 12   L0
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 13   L1
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 14   L2
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     1.0,  0.25, // 15   L3
+
+            // top
+            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.25, // 16   t0
+            -hwidth, hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.5,  0.25, // 17   t1
+            -hwidth, hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.5,  0.0,  // 18   t2
+            hwidth, hheight, hdepth,        1.0, 1.0, 1.0, 1.0,     0.75, 0.0,  // 19   t3
+
+            // bottom
+            hwidth, -hheight, -hdepth,      1.0, 1.0, 1.0, 1.0,     0.75, 0.75, // 20   b0
+            -hwidth, -hheight, -hdepth,     1.0, 1.0, 1.0, 1.0,     0.5,  0.75, // 21   b1
+            -hwidth, -hheight, hdepth,      1.0, 1.0, 1.0, 1.0,     0.5,  0.5,  // 22   b2
+            hwidth, -hheight, hdepth,       1.0, 1.0, 1.0, 1.0,     0.75, 0.5,  // 23   b3
+        ];
+
+        let indis = [
+            // clockwise winding
+            /*
+            0, 1, 2, 2, 3, 0, 
+            4, 0, 3, 3, 7, 4, 
+            5, 4, 7, 7, 6, 5, 
+            1, 5, 6, 6, 2, 1,
+            3, 2, 6, 6, 7, 3,
+            4, 5, 1, 1, 0, 4,
+            */
+
+            // counter-clockwise winding
+            0, 3, 2, 2, 1, 0,
+            4, 7, 6, 6, 5, 4,
+            8, 11, 10, 10, 9, 8,
+            12, 15, 14, 14, 13, 12,
+            16, 19, 18, 18, 17, 16,
+            21, 22, 23, 23, 20, 21,            
+        ];
+
+        return new Mesh( gl, program, verts, indis );
+    }
+
 
     /**
      * Render the mesh. Does NOT preserve array/index buffer or program bindings! 
@@ -87,12 +206,26 @@ class Mesh {
             this.verts, 3, 
             gl.FLOAT, false, VERTEX_STRIDE, 0 
         );
-
+        
         set_vertex_attrib_to_buffer( 
             gl, this.program, 
             "color", 
             this.verts, 4, 
             gl.FLOAT, false, VERTEX_STRIDE, 12
+        );
+
+        set_vertex_attrib_to_buffer(
+            gl, this.program,
+            "uv",
+            this.verts, 2,
+            gl.FLOAT, false, VERTEX_STRIDE, 28
+        );
+
+        set_vertex_attrib_to_buffer(
+            gl, this.program,
+            "normal",
+            this.verts, 3,
+            gl.FLOAT, false, VERTEX_STRIDE, 36
         );
 
         gl.drawElements( gl.TRIANGLES, this.n_indis, gl.UNSIGNED_SHORT, 0 );

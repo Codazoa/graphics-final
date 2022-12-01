@@ -6,8 +6,7 @@
         #the-canvas {border: 1px solid darkblue}
 
         .fov-range,
-        .translation-range,
-        .rotation-range {
+        .camera-speed {
             padding-left: 30px;
             float: left;
         }
@@ -22,240 +21,193 @@
     <script src="vector.js"></script>
     <script src="mesh.js"></script>
     <script src="listener.js"></script>
-
-    <!-- Creating the sliders below the canvas -->
-    <div class="slider-container">
-        <div class="fov-range">
-            <label for="fov-change">FOV</label>
-            <div class="slider">
-                <label for="fov" class="float-left"></label>
-                <input type="range" id="fovslider" min="1" max="170" value="90" oninput="updateFOV()">
-                <label id="fov" for="" class="float-right">90</label>
-            </div>
-        </div>
-        
-        <div class="translation-range">
-            <label for="translations">Translations</label>
-            <div class="slider">
-                <label for="xslider" class="float-left">X</label>
-                <input type="range" id="xslider" min="-100" max="100" value="0" oninput="updateTranslation()">
-                <label for="" id="xtrans" class="float-right">0</label>
-            </div>
-            
-            <div class="slider">
-                <label for="yslider" class="float-left">Y</label>
-                <input type="range" id="yslider" min="-100" max="100" value="0" oninput="updateTranslation()">
-                <label for="" id="ytrans">0</label>
-            </div>
-            
-            <div class="slider">
-                <label for="zslider">Z</label>
-                <input type="range" id="zslider" min="-1000" max="1000" value="0" oninput="updateTranslation()">
-                <label for="" id="ztrans">0</label>
-            </div>        
-        </div>
-
-        <div class="rotation-range">
-            <label for="rotations">Rotations</label>
-            <div class="slider">
-                <label for="xy-range">XY</label>
-                <input type="range" id="rot_xy" min="-100" max="100" value="0" oninput="updateRotation()">
-                <label for="" id="xy-rot-val">0</label>
-            </div>
-
-            <div class="slider">
-                <label for="xz-range">XZ</label>
-                <input type="range" id="rot_xz" min="-100" max="100" value="0" oninput="updateRotation()">
-                <label for="" id="xz-rot-val">0</label>
-            </div>
-
-            <div class="slider">
-                <label for="">YZ</label>
-                <input type="range" id="rot_yz" min="-100" max="100" value="0" oninput="updateRotation()">
-                <label for="" id="yz-rot-val">0</label>
-            </div>
-        </div>
-    </div>
+    <script src="camera.js"></script>
+    <script src="texture.js"></script>
+    <script src="shaders.js"></script>
+    <script src="material.js"></script>
 
     <script>
         let this_mesh;
 
+        // camera movements
+        const FORWARD = 0;
+        const LEFT = 1;
+        const BACKWARD = 2;
+        const RIGHT = 3;
+        const UP = 4;
+        const DOWN = 5;
+
+        
         const DESIRED_TICK_RATE = 60;
         const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
         let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
         const FAR = 100; // distance to far plane
-
-        const MODEL_SCALE = 1; // how much to scale the model
-
+        
         // set rotation speeds turns/second
         let ROTATION_SPEED_XY = 0.0; 
         let ROTATION_SPEED_XZ = 0.0;
         let ROTATION_SPEED_YZ = 0.0;
-
+        
         // set translation amounts
         let TRANSLATION_X = 0;
         let TRANSLATION_Y = 0;
         let TRANSLATION_Z = 0;
-
+        
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
         let rotation_amnt_xz = 0.0;
         let rotation_amnt_yz = 0.0;
-
-        // camera control speeds
         
+        // camera control speeds
+        let CAMERA_SPEED = 0.002
 
+        // light settings
+        const ambient = 0.25;
+        const diffuse = 1.0;
+        const specular = 2.0;
+        const shininess = 4.0;
+
+        const sun_dir = new Vec4( 0.0, 1.0, 0.0, 0.0 );
+        const sun_color = new Vec4( 1.0, 1.0, 1.0, 1.0 );
+
+        const point_light_dir = new Vec4( 1.0, 0.0, 0.0, 0.0 );
+        const point_light_color = new Vec4( 1.0, 0.0, 0.0, 1.0 );
+        
         let time_delta = 0.0;
-        let last_update = performance.now();        
-
+        let last_update = performance.now();       
+        
         let canvas = document.getElementById("the-canvas");
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
-
-        // vertex shader
-        let vertex_source =
-        `   #version 300 es
-            precision mediump float;
-
-            uniform mat4 modelview;
-
-            in vec3 coordinates;
-            in vec4 color;
-
-            out vec4 v_color;
-
-            void main(void){
-                gl_Position = modelview * vec4( coordinates, 1.0 );
-                v_color = color;
-            }
-        `;
         
-        // fragment shader
-        let fragment_source =
-        `   #version 300 es
-            precision mediump float;
-
-            in vec4 v_color;
-
-            out vec4 f_color;
-
-            void main(void){
-                f_color = v_color;
-            }
-        `;
-
-        let view = new Mat4();
-        let model = new Mat4();
+        // let view = new Camera( 0, 0, 2 );
+        let camera = new Camera( 0, 0, -2, CAMERA_SPEED );
+        let view = camera.get_view();
         let perspective = new Mat4();
         let modelview = new Mat4();
-
-        setInterval( update, DESIRED_MSPT, performance.now() );
         
         // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
         gl.useProgram( shader_program );
-
+        
         // setting various render settings
-        set_render_params( gl );        
+        set_render_params( gl );     
 
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
-        get_mesh( Mesh.box(gl, shader_program, 2, 2, 2) );
+        get_mesh( Mesh.make_uv_sphere(gl, shader_program, 16, null) );
+        
+        // texture stuff
+        let tex = gl.createTexture();
+
+        gl.bindTexture( gl.TEXTURE_2D, tex );
+        set_uniform_scalar( gl, shader_program, 'mat_ambient', ambient );
+        set_uniform_scalar( gl, shader_program, 'mat_diffuse', diffuse ); 
+        set_uniform_scalar( gl, shader_program, 'mat_specular', specular );
+        set_uniform_scalar( gl, shader_program, 'mat_shininess', shininess );
+        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+        set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
+
+        set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
+
+        gl.texImage2D( 
+            gl.TEXTURE_2D, 0, gl.RGBA,
+            256, 256, 0,
+            gl.RGBA, gl.UNSIGNED_BYTE,
+            xor_texture(256)
+        );
+        gl.generateMipmap( gl.TEXTURE_2D );
+
+        // set up image
+        let image = new Image();
+        image.onload = function () {
+            gl.bindTexture( gl.TEXTURE_2D, tex );
+            gl.texImage2D( 
+                gl.TEXTURE_2D, 0, gl.RGBA,
+                gl.RGBA, gl.UNSIGNED_BYTE,
+                image
+            );
+            gl.generateMipmap( gl.TEXTURE_2D );
+        };
+
+        image.src = 'tex/metal_scale.png';
 
         let listener = Keys.start_listening();
         
         function get_mesh( mesh ) {
             this_mesh = mesh;
-        }  
+        }
+        
 
-        function update( now ) {
-            time_delta = ( now - last_update ) / 1000;
-            last_update = performance.now();
-
+        let key_bindings = {
+            "KeyW": function() { camera.pan(FORWARD) },
+            "KeyA": function() { camera.pan(LEFT) },
+            "KeyS": function() { camera.pan(BACKWARD) },
+            "KeyD": function() { camera.pan(RIGHT) },
+            "Space": function() { camera.pan(UP) },
+            "KeyC": function() { camera.pan(DOWN) },
+            "KeyQ": function() { camera.roll(-1) },
+            "KeyE": function() { camera.roll(1) },
+            "ArrowUp": function() { camera.pitch(1) },
+            "ArrowLeft": function() { camera.yaw(-1) },
+            "ArrowDown": function() { camera.pitch(-1) },
+            "ArrowRight": function() { camera.yaw(1) }
+        }
+        
+        setInterval( update, DESIRED_MSPT, performance.now() );
+        function update() {
+            
             // update camera
             listener.keys_down_list().forEach( key => {
-                switch( key ){
-                    case "KeyW": { // pan camera forward ( increase z translation )
-                        break;
-                    }
-                    case "KeyA": { // pan camera left ( decrease x translation )
-                        break;
-                    } 
-                    case "KeyS": { // pan camera backwards ( decrease z translation )
-                        break;
-                    } 
-                    case "KeyD": { // pan camera right ( increase x translation )
-                        break;
-                    }
-                    case "Space": { // pan camera up ( increase y translation )
-                        break;
-                    } 
-                    case "KeyC": { // pan camera down ( decrease y translation )
-                        break;
-                    } 
-                    case "KeyQ": { // roll camera left ( decrease xy rotation )
-                        break;
-                    } 
-                    case "KeyE": { // roll camera right ( increase xy rotation )
-                        break;
-                    } 
-                    case "ArrowLeft": { // yaw camera left ( decrease xz rotation )
-                        break;
-                    } 
-                    case "ArrowRight": { // yaw camera right ( increase xz rotation )
-                        break;
-                    } 
-                    case "ArrowUp": { // pitch camera down ( decrease yz rotation )
-                        break;
-                    } 
-                    case "ArrowDown": { // pitch camera up ( increases yz rotation )
-                        break;
-                    }
-                    default:
-                        break;
+                if( key in key_bindings ) {
+                    key_bindings[key]();
                 }
             });
 
+            set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+                
             // get new rotations
-            rotation_amnt_xy += ROTATION_SPEED_XY / 100;
-            rotation_amnt_xz += ROTATION_SPEED_XZ / 100;
-            rotation_amnt_yz += ROTATION_SPEED_YZ / 100; 
+            rotation_amnt_xy += ROTATION_SPEED_XY / DESIRED_TICK_RATE;
+            rotation_amnt_xz += ROTATION_SPEED_XZ / DESIRED_TICK_RATE;
+            rotation_amnt_yz += ROTATION_SPEED_YZ / DESIRED_TICK_RATE; 
             
             // keep rotations betweeen 0 and 1
             rotation_amnt_xy %= 1.0;
             rotation_amnt_xz %= 1.0;
             rotation_amnt_yz %= 1.0; 
-
+            
             // create the 3 rotation matrices
             let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
             let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
             let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
             
             perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
-    
+            
             // move the mesh away from the camera
             translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
             
             // multiply the rotations and translations to a final model
             model = rot_yz.mul( rot_xz.mul( rot_xy ) );
             model = translation.mul( model );
-    
-            // scale the model to fit the screen
-            model = model.mul( Mat4.scale( MODEL_SCALE, MODEL_SCALE, MODEL_SCALE ) );
-            modelview = view.mul( model );
+            
+            view = camera.get_view();
 
+            modelview = view.mul( model );
+            
             modelview = perspective.mul( modelview )
         }
-
+        
         // initializing render function
         function render( now ){
-            requestAnimationFrame( render ); 
+            requestAnimationFrame( render );
             
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
-      
+            
             set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
             
             // wait until the mesh has been loaded to attempt to render it
@@ -266,38 +218,39 @@
         }
         
         requestAnimationFrame( render );
-
+        
         function updateFOV() {
-            let x = document.getElementById("fovslider").value;
+            let x = document.getElementById("fov").value;
             FOV = x;
-            document.getElementById("fov").innerHTML = x;
         }
 
-        function updateTranslation() {
-            let x = document.getElementById("xslider").value / 10;
-            let y = document.getElementById("yslider").value / 10;
-            let z = document.getElementById("zslider").value / 10;
-            TRANSLATION_X = x;
-            TRANSLATION_Y = y;
-            TRANSLATION_Z = z;
-            document.getElementById("xtrans").innerHTML = x;
-            document.getElementById("ytrans").innerHTML = y;
-            document.getElementById("ztrans").innerHTML = z;
-        }
+        function updateCameraSpeed() {
+            let speed = document.getElementById("cam-speed").value;
+            camera.speed = speed / 5000
 
-        function updateRotation() {
-            let xy = document.getElementById("rot_xy").value / 100;
-            let xz = document.getElementById("rot_xz").value / 100;
-            let yz = document.getElementById("rot_yz").value / 100;
-            ROTATION_SPEED_XY = xy;
-            ROTATION_SPEED_XZ = xz;
-            ROTATION_SPEED_YZ = yz;
-            document.getElementById("xy-rot-val").innerHTML = xy;
-            document.getElementById("xz-rot-val").innerHTML = xz;
-            document.getElementById("yz-rot-val").innerHTML = yz;
         }
-
+            
     </script>
+
+    <!-- Creating the sliders below the canvas -->
+    <div class="slider-container">
+        <div class="fov-range">
+            <label for="fov-change">FOV</label>
+            <div class="slider">
+                <label for="fov" class="float-left"></label>
+                <input type="number" id="fov" min="1" max="170" value="90" oninput="updateFOV()">
+            </div>
+        </div>
+        
+        <div class="camera-speed">
+            <label for="camera-speed">Camera Speed</label>
+            <div class="numbers">
+                <label for="speed" class="float-left"></label>
+                <input type="number" id="cam-speed" min="0" max="100" name="speed" value="10" oninput="updateCameraSpeed()">
+            </div>
+
+        </div>
+    </div>
     
 </body>
 </html>
