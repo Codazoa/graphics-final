@@ -25,6 +25,7 @@
     <script src="texture.js"></script>
     <script src="shaders.js"></script>
     <script src="material.js"></script>
+    <script src="scene.js"></script>
 
     <script>
         let this_mesh;
@@ -64,10 +65,10 @@
         let CAMERA_SPEED = 0.002
 
         // light settings
-        const ambient = 0.25;
-        const diffuse = 1.0;
-        const specular = 2.0;
-        const shininess = 4.0;
+        // const ambient = 0.25;
+        // const diffuse = 1.0;
+        // const specular = 2.0;
+        // const shininess = 4.0;
 
         const sun_dir = new Vec4( 0.0, 1.0, 0.0, 0.0 );
         const sun_color = new Vec4( 1.0, 1.0, 1.0, 1.0 );
@@ -94,7 +95,7 @@
         
         // setting various render settings
         set_render_params( gl );     
-
+        /*
         // set the mesh to use
         // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
         get_mesh( Mesh.make_uv_sphere(gl, shader_program, 16, null) );
@@ -141,7 +142,16 @@
         function get_mesh( mesh ) {
             this_mesh = mesh;
         }
-        
+        */
+
+        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+        set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
+
+        set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
+        set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
+
+        let listener = Keys.start_listening();
 
         let key_bindings = {
             "KeyW": function() { camera.pan(FORWARD) },
@@ -157,8 +167,40 @@
             "ArrowDown": function() { camera.pitch(-1) },
             "ArrowRight": function() { camera.yaw(1) }
         }
+
+
+        //set up the scene
+         //earth
+        let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
+        let sun_mesh = Mesh.uv_sphere(gl, shader_program, 24, sun_mat);
+
+        //earth
+        let earth_mat = new Material(gl, 0.25, 1.0, 2.0, 4.0, 'tex/earth/earth_col.jpg');
+        let earth_mesh = Mesh.uv_sphere(gl, shader_program, 24, earth_mat);
+
+        //moon
+        let moon_mat = new Material(gl, 0.25, 1.0, 0.5, 1, 'tex/moon/moon_col.jpg');
+        let moon_mesh = Mesh.uv_sphere(gl, shader_program, 24, moon_mat);
+
+        let scene = new Scene();
+        
+        let root = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
+        
+        let sun = root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, sun_mesh);
+        
+
+        let earth_arm = sun.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
+        let earth_pos = earth_arm.create_child_node(3, 0, 0,    1, 1, 0.95,   .5, .5, .5, null);
+        let earth = earth_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, earth_mesh);
+
+        let moon_arm = earth_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
+        let moon = moon_arm.create_child_node(3, 0, 0,     1, 1, 1,    0.25, 0.25, 0.25, moon_mesh);
+
+
         
         setInterval( update, DESIRED_MSPT, performance.now() );
+        render(performance.now());
+
         function update() {
             
             // update camera
@@ -196,28 +238,40 @@
             
             view = camera.get_view();
 
-            modelview = view.mul( model );
+            set_uniform_matrix4(gl, shader_program, "view", view.data);
+            set_uniform_matrix4(gl, shader_program, "perspective", perspective.data);
+
+            // modelview = view.mul( model );
             
-            modelview = perspective.mul( modelview )
+            // modelview = perspective.mul( modelview )
         }
         
         // initializing render function
         function render( now ){
-            requestAnimationFrame( render );
+            
             
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
             
-            set_uniform_matrix4( gl, shader_program, "modelview", modelview.data );
-            
-            // wait until the mesh has been loaded to attempt to render it
-            if( this_mesh != null ){
-                this_mesh.render( gl );
+            let jobs = [];
+            let lights = [];
+            scene.generate_render_batch(jobs, lights);
+
+           
+            for (let i = 0; i < jobs.length; i++) {
+                if (jobs[i].mesh != null){
+                    console.log('mesh should render');
+                    
+                    jobs[i].mesh.render(gl);
+                    jobs[i].mesh.material.bind(gl, shader_program);
+                }  else {console.log('mesh not loaded')};
+                
+                set_uniform_matrix4(gl, shader_program, "model", jobs[i].matrix.data);
             }
-            
+            requestAnimationFrame( render );
         }
         
-        requestAnimationFrame( render );
+        // requestAnimationFrame( render );
         
         function updateFOV() {
             let x = document.getElementById("fov").value;

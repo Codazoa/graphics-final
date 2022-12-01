@@ -29,7 +29,7 @@ class Mesh {
      * @param {number} depth 
      */
 
-    static box( gl, program, width, height, depth ) {
+    static box( gl, program, width, height, depth, material ) {
         let hwidth = width / 2.0;
         let hheight = height / 2.0;
         let hdepth = depth / 2.0;
@@ -66,10 +66,10 @@ class Mesh {
             4, 0, 1, 1, 5, 4,
         ];
 
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material );
     }
 
-    static make_uv_sphere( gl, program, subdivs, material ) {
+    static uv_sphere( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
 
@@ -116,11 +116,11 @@ class Mesh {
             }
         }
 
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material);
     }
 
     // create a box with completely separeate faces
-    static box_six_sided( gl, program, width, height, depth ) {
+    static box_six_sided( gl, program, width, height, depth, material ) {
         let hwidth = width / 2.0;
         let hheight = height / 2.0;
         let hdepth = depth / 2.0;
@@ -183,7 +183,7 @@ class Mesh {
             21, 22, 23, 23, 20, 21,            
         ];
 
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material);
     }
 
 
@@ -268,7 +268,7 @@ class Mesh {
                 });
             }
         });
-        return new Mesh( gl, program, verts, indis );
+        return new Mesh( gl, program, verts, indis, material);
     }
 
     /**
