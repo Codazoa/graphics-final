@@ -133,14 +133,13 @@ class Node {
                 lights.push( new RenderLight( coords, this.data ) );
             }
         }
-        else if( this.data instanceof NormalMesh ) {
+        else if( this.data instanceof Mesh ) {
             jobs.push( new RenderMesh( matrix, this.data ) )
         }
         else if( this.data == null ) {
             // do nothing
         }
         else {
-            console.log( this );
             throw new Error( 
                 'unrecognized node data: ' + 
                 this.data.constructor.name + ' (' + this.data + ').' 
@@ -150,6 +149,14 @@ class Node {
         for( let child of this.children ) {
             child.generate_render_batch( matrix, jobs, lights );
         }
+    }
+}
+class NodeLight {
+    constructor(r, g, b, is_sun){
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.is_sun = is_sun;
     }
 }
 
@@ -172,9 +179,9 @@ class Scene {
     constructor() {
         this.root = new Node( 0, 0, 0, 0, 0, 0, 1, 1, 1 );
         this.camera_node = this.root;
-        this.sun_node = 
-            this.root.create_child_node( 
-                0, 1, 0, 0, 0, 0, 1, 1, 1, new NodeLight( 1, 1, 1, true ) );
+        // this.sun_node = 
+        //     this.root.create_child_node( 
+        //         0, 1, 0, 0, 0, 0, 1, 1, 1, new NodeLight( 1, 1, 1, true ) );
     }
 
     set_sun_color( r, g, b ) {

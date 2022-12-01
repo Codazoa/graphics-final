@@ -3,7 +3,9 @@ let vertex_source =
 `   #version 300 es
 precision mediump float;
 
-uniform mat4 modelview;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 perspective;
 uniform float mat_ambient;
 uniform float mat_diffuse;
 uniform float mat_specular;
@@ -45,7 +47,7 @@ vec3 spec_color(vec3 normal, vec3 light_dir, vec3 light_color, float mat_specula
 }
 
 void main(void){
-    gl_Position = modelview * vec4( coordinates, 1.0 );
+    gl_Position = perspective * view * model * vec4( coordinates, 1.0 );
     float L = 1.0;
 
     vec3 sun_diff = diff_color( normal, sun_dir, sun_color, mat_diffuse );

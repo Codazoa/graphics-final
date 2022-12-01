@@ -69,7 +69,7 @@ class Mesh {
         return new Mesh( gl, program, verts, indis, material );
     }
 
-    static make_uv_sphere( gl, program, subdivs, material ) {
+    static uv_sphere( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
 
