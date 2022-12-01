@@ -5,3 +5,8 @@
 - (4) Commenting
 
 ## Open Issues ##
+- (5) 3 dynamic lights
+- (6) 3 parent child objects
+- (7) camera on rails (constantly moving forward)
+- (8) multiple different textures
+- (9) skybox
