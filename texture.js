@@ -9,6 +9,8 @@ class Textures {
     }
 
 }
+
+
 function xor_texture(width){
     let data = new Array( 256 * 256 * 4 );
     for( let row = 0; row < width; row++ ) {

@@ -89,3 +89,35 @@ void main(void){
     f_color = texture( tex_0, v_uv ) * v_color;
 }
 `;
+
+
+let skybox_vert =
+`   #version 300 es
+layout (location = 0) in vec3 aPos;
+
+precision mediump float;
+
+uniform mat4 view;
+uniform mat4 perspective;
+
+out vec3 TexCoords;
+
+void main(void){
+    TexCoords = aPos;
+    gl_Position = perspective * view * vec4(aPos, 1.0);
+}
+`;
+
+let skybox_frag =
+`   #version 300 es
+precision mediump float;
+
+in vec3 TexCoords;
+uniform samplerCube cubemap;
+
+out vec4 f_color;
+
+void main(void){
+    f_color = texture(cubemap, TexCoords);
+}
+`;
