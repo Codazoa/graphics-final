@@ -148,8 +148,8 @@
         set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
         set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
 
-        set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
-        set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
+        // set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
+        // set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
 
         let listener = Keys.start_listening();
 
@@ -170,8 +170,9 @@
 
 
         //set up the scene
-         //earth
-        let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
+        //sun
+        // let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
+        let sun_mat = new Material(gl, 0.25, 1.0, 2.0, 4.0, 'tex/sun/sun_col.jpg');
         let sun_mesh = Mesh.uv_sphere(gl, shader_program, 24, sun_mat);
 
         //earth
@@ -187,20 +188,26 @@
         let root = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         
         let sun = root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, sun_mesh);
+        let sun_light = sun.create_child_node(1,1,1,     1, 1, 1,    1, 1, 1, new NodeLight(1.0, 0.8, 0.0, false));
         
 
         let earth_arm = sun.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let earth_pos = earth_arm.create_child_node(3, 0, 0,    1, 1, 0.95,   .5, .5, .5, null);
         let earth = earth_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, earth_mesh);
+        let bitchlight = earth_pos.create_child_node(1, 0, 0,     1, 1, 1,    1, 1, 1, new NodeLight(0.6, 0.2, 0.8, false));
 
         let moon_arm = earth_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon = moon_arm.create_child_node(3, 0, 0,     1, 1, 1,    0.25, 0.25, 0.25, moon_mesh);
 
 
+        gl.clearColor(0.05 , 0.05, 0.05, 1);
+        gl.enable(gl.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         
         setInterval( update, DESIRED_MSPT, performance.now() );
         render(performance.now());
 
+        const DELTA_T = 1/DESIRED_TICK_RATE;
         function update() {
             
             // update camera
@@ -236,6 +243,13 @@
             model = rot_yz.mul( rot_xz.mul( rot_xy ) );
             model = translation.mul( model );
             
+            earth_pos.add_yaw(10 * DELTA_T);
+            earth_arm.add_roll(97 * DELTA_T);
+
+            let jobs = [];
+            let lights = [];
+            scene.generate_render_batch(jobs, lights);
+
             view = camera.get_view();
 
             set_uniform_matrix4(gl, shader_program, "view", view.data);
@@ -260,14 +274,34 @@
            
             for (let i = 0; i < jobs.length; i++) {
                 if (jobs[i].mesh != null){
-                    console.log('mesh should render');
+                    // console.log('mesh should render');
                     
                     jobs[i].mesh.render(gl);
                     jobs[i].mesh.material.bind(gl, shader_program);
-                }  else {console.log('mesh not loaded')};
+                }  else {
+                    // console.log('mesh not loaded')
+                };
                 
                 set_uniform_matrix4(gl, shader_program, "model", jobs[i].matrix.data);
             }
+            let light_locs = [];
+            let light_colors = [];
+            for (let i = 0; i < 8; i++) {
+
+                if (lights[i] != null){
+                    light_locs[i] = [lights[i].loc.x, lights[i].loc.y, lights[i].loc.z];
+                    light_colors[i] = [lights[i].color.r, lights[i].color.g, lights[i].color.b];
+                } else {
+                    // break;
+                    light_locs[i] = [0, 0, 0];
+                    light_colors[i] = [0, 0, 0];
+                }
+                set_uniform_vec3_array(gl, shader_program, "point_light_dir["+i.toString()+"]",  light_locs[i]);
+                set_uniform_vec3_array(gl, shader_program, "point_light_color["+i.toString()+"]", light_colors[i]);
+            }
+            // set_uniform_vec3_array(gl, shader_program, "point_light_dir["+i.toString()+"]",  light_locs[0]);
+            // set_uniform_vec3_array(gl, shader_program, "point_light_color["+i.toString()+"]", light_colors[0]);
+
             requestAnimationFrame( render );
         }
         

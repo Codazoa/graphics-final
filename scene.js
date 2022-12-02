@@ -126,7 +126,7 @@ class Node {
 
     generate_render_batch( parent_matrix, jobs, lights ) {
         let matrix = parent_matrix.mul( this.get_matrix() );
-
+        // console.log(matrix);
         if( this.data instanceof NodeLight ) {
             if( !this.data.is_the_sun ) {
                 let coords = matrix.get_transformed_coordinates();

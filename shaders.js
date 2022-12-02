@@ -15,8 +15,8 @@ uniform vec3 camera_pos;
 uniform vec3 sun_dir;
 uniform vec3 sun_color;
 
-uniform vec3 point_light_dir;
-uniform vec3 point_light_color;
+uniform vec3 point_light_dir[8];
+uniform vec3 point_light_color[8];
 
 in vec3 coordinates;
 in vec4 color;
@@ -52,18 +52,26 @@ void main(void){
 
     vec3 sun_diff = diff_color( normal, sun_dir, sun_color, mat_diffuse );
     vec3 sun_spec = spec_color( normal, sun_dir, sun_color, mat_specular, mat_shininess );
-    vec3 point_diff = diff_color( normal, point_light_dir, point_light_color, mat_diffuse );
-    vec3 point_spec = spec_color( normal, point_light_dir, point_light_color, mat_specular, mat_shininess );
-    vec4 ambient_color = vec4( mat_ambient, mat_ambient, mat_ambient, 1.0 );
 
-    float dist = length(point_light_dir - coordinates);
-    float attenuation = 1.0/(L * dist);
+    vec3 point_diff = vec3(0, 0, 0);
+    vec3 point_spec = vec3(0, 0, 0);
+    float attenuation = 0.0;
+    for (int i = 0; i < 8; i++) {
+
+        point_diff += diff_color( normal, point_light_dir[i], point_light_color[i], mat_diffuse );
+        point_spec += spec_color( normal, point_light_dir[i], point_light_color[i], mat_specular, mat_shininess );
+
+        float dist = length(point_light_dir[i] - coordinates);
+        attenuation += 1.0/(L * dist);
+
+    }
+    vec4 ambient_color = vec4( mat_ambient, mat_ambient, mat_ambient, 1.0 );
 
     v_color = (ambient_color + vec4(sun_diff, 1.0) + vec4(sun_spec, 1.0) +
         (vec4(point_diff, 1.0) + vec4(point_spec, 1.0)) * attenuation) * color;
     v_uv = uv;
 }
-`;
+`
 
 // fragment shader
 let fragment_source =
