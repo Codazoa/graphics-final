@@ -26,6 +26,7 @@
     <script src="shaders.js"></script>
     <script src="material.js"></script>
     <script src="scene.js"></script>
+    <script src="cubemap.js"></script>
 
     <script>
         let this_mesh;
@@ -55,6 +56,7 @@
         let TRANSLATION_X = 0;
         let TRANSLATION_Y = 0;
         let TRANSLATION_Z = 0;
+
         
         // set rotation amounts
         let rotation_amnt_xy = 0.0;
@@ -84,8 +86,8 @@
         let modelview = new Mat4();
         
         // compile shaders and activate the shader program
-        let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
-        gl.useProgram( shader_program );
+        let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source);
+        let skybox_shader_program = create_compile_and_link_program( gl, skybox_vert, skybox_frag );
         
         // setting various render settings
         set_render_params( gl );     
@@ -116,6 +118,18 @@
 
 
         //set up the scene
+        //skybox
+        let skybox_urls = [
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/top.png',
+        ]
+        let skybox_mat = Cubemap.loadCubemap(gl, skybox_urls);
+        let skybox = Cubemap.box_six_sided(gl, skybox_shader_program, 1, 1, 1, skybox_mat);
+
         //earth
         let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
         let sun_mesh = Mesh.uv_sphere(gl, shader_program, 24, sun_mat);
@@ -142,7 +156,7 @@
         let moon_arm = earth_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon = moon_arm.create_child_node(3, 0, 0,     1, 1, 1,    0.25, 0.25, 0.25, moon_mesh);
 
-
+        // let skybox = root.create_child_node( 0, 0, 0,   0, 0, 0,    1, 1, 1,    skybox_mesh);
         
         setInterval( update, DESIRED_MSPT, performance.now() );
         render(performance.now());
@@ -192,18 +206,17 @@
         // initializing render function
         function render( now ){
             
-            
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
+            
+            skybox.render( gl, view, perspective );
             
             let jobs = [];
             let lights = [];
             scene.generate_render_batch(jobs, lights);
-
            
             for (let i = 0; i < jobs.length; i++) {
                 if (jobs[i].mesh != null){
-                    console.log('mesh should render');
                     
                     jobs[i].mesh.render(gl);
                     jobs[i].mesh.material.bind(gl, shader_program);
