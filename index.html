@@ -46,35 +46,12 @@
         const NEAR = 0.1; // distance to near plane
         const FAR = 100; // distance to far plane
         
-        // set rotation speeds turns/second
-        let ROTATION_SPEED_XY = 0.0; 
-        let ROTATION_SPEED_XZ = 0.0;
-        let ROTATION_SPEED_YZ = 0.0;
-        
-        // set translation amounts
-        let TRANSLATION_X = 0;
-        let TRANSLATION_Y = 0;
-        let TRANSLATION_Z = 0;
-        
-        // set rotation amounts
-        let rotation_amnt_xy = 0.0;
-        let rotation_amnt_xz = 0.0;
-        let rotation_amnt_yz = 0.0;
-        
         // camera control speeds
         let CAMERA_SPEED = 0.002
 
-        // light settings
-        // const ambient = 0.25;
-        // const diffuse = 1.0;
-        // const specular = 2.0;
-        // const shininess = 4.0;
 
         const sun_dir = new Vec4( 0.0, 1.0, 0.0, 0.0 );
         const sun_color = new Vec4( 1.0, 1.0, 1.0, 1.0 );
-
-        const point_light_dir = new Vec4( 1.0, 0.0, 0.0, 0.0 );
-        const point_light_color = new Vec4( 1.0, 0.0, 0.0, 1.0 );
         
         let time_delta = 0.0;
         let last_update = performance.now();       
@@ -219,29 +196,11 @@
 
             set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
                 
-            // get new rotations
-            rotation_amnt_xy += ROTATION_SPEED_XY / DESIRED_TICK_RATE;
-            rotation_amnt_xz += ROTATION_SPEED_XZ / DESIRED_TICK_RATE;
-            rotation_amnt_yz += ROTATION_SPEED_YZ / DESIRED_TICK_RATE; 
             
-            // keep rotations betweeen 0 and 1
-            rotation_amnt_xy %= 1.0;
-            rotation_amnt_xz %= 1.0;
-            rotation_amnt_yz %= 1.0; 
             
-            // create the 3 rotation matrices
-            let rot_xy = Mat4.rotation_xy( rotation_amnt_xy );
-            let rot_xz = Mat4.rotation_xz( rotation_amnt_xz );
-            let rot_yz = Mat4.rotation_yz( rotation_amnt_yz );
             
-            perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
             
-            // move the mesh away from the camera
-            translation = Mat4.translation( TRANSLATION_X, TRANSLATION_Y, TRANSLATION_Z );
-            
-            // multiply the rotations and translations to a final model
-            model = rot_yz.mul( rot_xz.mul( rot_xy ) );
-            model = translation.mul( model );
+          
             
             earth_pos.add_yaw(10 * DELTA_T);
             earth_arm.add_roll(97 * DELTA_T);
@@ -250,14 +209,11 @@
             let lights = [];
             scene.generate_render_batch(jobs, lights);
 
+            perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
             view = camera.get_view();
 
             set_uniform_matrix4(gl, shader_program, "view", view.data);
             set_uniform_matrix4(gl, shader_program, "perspective", perspective.data);
-
-            // modelview = view.mul( model );
-            
-            // modelview = perspective.mul( modelview )
         }
         
         // initializing render function
