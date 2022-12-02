@@ -22,7 +22,6 @@
     <script src="mesh.js"></script>
     <script src="listener.js"></script>
     <script src="camera.js"></script>
-    <script src="texture.js"></script>
     <script src="shaders.js"></script>
     <script src="material.js"></script>
     <script src="scene.js"></script>
@@ -42,6 +41,7 @@
         
         const DESIRED_TICK_RATE = 60;
         const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
+        const DELTA_T = 1/DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
         let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
@@ -69,6 +69,8 @@
         
         // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source);
+        gl.useProgram( shader_program );
+        
         let skybox_shader_program = create_compile_and_link_program( gl, skybox_vert, skybox_frag );
         
         // setting various render settings
@@ -102,12 +104,12 @@
         //set up the scene
         //skybox
         let skybox_urls = [
-            'tex/ai-skybox/top.png',
-            'tex/ai-skybox/top.png',
-            'tex/ai-skybox/top.png',
-            'tex/ai-skybox/top.png',
-            'tex/ai-skybox/top.png',
-            'tex/ai-skybox/top.png',
+            'tex/skybox/right.jpg',
+            'tex/skybox/left.jpg',
+            'tex/skybox/top.jpg',
+            'tex/skybox/bottom.jpg',
+            'tex/skybox/front.jpg',
+            'tex/skybox/back.jpg',
         ]
         let skybox_mat = Cubemap.loadCubemap(gl, skybox_urls);
         let skybox = Cubemap.box_six_sided(gl, skybox_shader_program, 1, 1, 1, skybox_mat);
@@ -148,7 +150,6 @@
         setInterval( update, DESIRED_MSPT, performance.now() );
         render(performance.now());
 
-        const DELTA_T = 1/DESIRED_TICK_RATE;
         function update() {
             
             // update camera
@@ -160,14 +161,8 @@
 
             set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
                 
-            
-            
-            
-            
-          
-            
-            earth_pos.add_yaw(10 * DELTA_T);
-            earth_arm.add_roll(97 * DELTA_T);
+            earth_pos.add_yaw(0.5 * DELTA_T);
+            earth_arm.add_roll(0.25 * DELTA_T);
 
             let jobs = [];
             let lights = [];
@@ -186,12 +181,13 @@
             // clear screen
             gl.clear( gl.COLOR_BUFFER_BIT );
             
-            skybox.render( gl, view, perspective );
+            skybox.render_skybox( gl, view, perspective );
             
             let jobs = [];
             let lights = [];
             scene.generate_render_batch(jobs, lights);
-           
+            
+            gl.useProgram( shader_program );
             for (let i = 0; i < jobs.length; i++) {
                 if (jobs[i].mesh != null){
                     // console.log('mesh should render');
