@@ -9,4 +9,5 @@
 - (6) 3 parent child objects
 - (7) camera on rails (constantly moving forward)
 - (8) multiple different textures
-- (9) skybox
+- (9) skybox - Cody
+- (10) scene graph - Jack
