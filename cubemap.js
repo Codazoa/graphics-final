@@ -77,7 +77,6 @@ class Cubemap {
             img[i].onload = function () {
                 count++;
                 if( count == 6 ) {
-                    textureID = gl.createTexture();
                     gl.bindTexture( gl.TEXTURE_CUBE_MAP, textureID );
                     for( let j = 0; j < faces.length; j++ ){
                         gl.texImage2D( cubemap_sides[j], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img[j] );
