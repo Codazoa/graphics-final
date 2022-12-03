@@ -30,7 +30,7 @@ class Cubemap {
             
             set_vertex_attrib_to_buffer(
                 gl, this.program, "coordinates", 
-                this.verts, 4, gl.FLOAT, 
+                this.verts, 3, gl.FLOAT, 
                 false, SKYBOX_STRIDE, 0
             );
 
