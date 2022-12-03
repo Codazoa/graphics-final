@@ -21,53 +21,120 @@ class Mesh {
         this.material = material;
     }
 
-    /**
-     * Create a box mesh with the given dimensions and colors.
-     * @param {WebGLRenderingContext} gl 
-     * @param {number} width 
-     * @param {number} height 
-     * @param {number} depth 
-     */
+    static uv_cylinder( gl, program, subdivs, material ) {
+        let verts = [];
+        let indis = [];
+        let u = -1;
+        let v = -1;
 
-    static box( gl, program, width, height, depth, material ) {
-        let hwidth = width / 2.0;
-        let hheight = height / 2.0;
-        let hdepth = depth / 2.0;
+        // generating verts
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y = ( layer / subdivs ) * -1;
 
-        let verts = [
-            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0,
-            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0,
-            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0,
-            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
+    
+                let turns = subdiv / subdivs;
+                let rads = turns * TAU;
 
-            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0,
-            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0,
-            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0,
-            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0,
-        ];
+                let x = (Math.cos( rads ) / 2);
+                let z = (Math.sin( rads ) / 2);
+    
+                verts.push( x, y, z );
+                verts.push( 1, 1, 1, 1 );
+    
+                //let u = subdiv / subdivs;
+                //let v = layer / subdivs;
 
-        let indis = [
-            // clockwise winding
-            /*
-            0, 1, 2, 2, 3, 0, 
-            4, 0, 3, 3, 7, 4, 
-            5, 4, 7, 7, 6, 5, 
-            1, 5, 6, 6, 2, 1,
-            3, 2, 6, 6, 7, 3,
-            4, 5, 1, 1, 0, 4,
-            */
+                u++;
+                u = u % 2;
+    
+                verts.push( u, v );
 
-            // counter-clockwise winding
-            0, 3, 2, 2, 1, 0,
-            4, 7, 3, 3, 0, 4,
-            5, 6, 7, 7, 4, 5,
-            1, 2, 6, 6, 5, 1,
-            3, 7, 6, 6, 2, 3,
-            4, 0, 1, 1, 5, 4,
-        ];
+                let norm = new Vec4(x, y, z, 1);
+                norm = norm.norm();
 
-        return new Mesh( gl, program, verts, indis, material );
+                verts.push(norm.x, norm.y, norm.z);
+            }
+
+            v++;
+            v = v % 2;
+        }
+
+        // generating indis
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
+
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
+                // calculate the 2 triangles
+                let current_vert = layer_start_vert + subdiv;
+                let next_layer_vert = current_vert + subdivs + 1;
+                let i0 = next_layer_vert;
+                let i1 = i0 + 1;
+                let i2 = current_vert + 1;
+                indis.push( current_vert, i0, i1, i1, i2, current_vert);
+            }
+        }
+
+        return new Mesh( gl, program, verts, indis, material);
     }
+
+    static uv_road( gl, program, subdivs, material ) {
+        let verts = [];
+        let indis = [];
+        let u = -1;
+        let v = -1;
+
+        // generating verts
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y = ( layer / subdivs ) * -1;
+
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
+    
+                let turns = subdiv / subdivs;
+                let rads = turns * TAU;
+
+                let x = (Math.cos( rads ) / 2);
+                let z = (Math.sin( rads ) / 2);
+    
+                verts.push( x, y, z );
+                verts.push( 1, 1, 1, 1 );
+    
+                //let u = subdiv / subdivs;
+                //let v = layer / subdivs;
+
+                u++;
+                u = u % 2;
+    
+                verts.push( u, layer/subdivs );
+
+                let norm = new Vec4(x, y, z, 1);
+                norm = norm.norm();
+
+                verts.push(norm.x, norm.y, norm.z);
+            }
+
+            v++;
+            v = v % 2;
+        }
+
+        // generating indis
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
+
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
+                // calculate the 2 triangles
+                let current_vert = layer_start_vert + subdiv;
+                let next_layer_vert = current_vert + subdivs + 1;
+                let i0 = next_layer_vert;
+                let i1 = i0 + 1;
+                let i2 = current_vert + 1;
+                indis.push( current_vert, i0, i1, i1, i2, current_vert);
+            }
+        }
+
+        return new Mesh( gl, program, verts, indis, material);
+    }
+
 
     static uv_sphere( gl, program, subdivs, material ) {
         let verts = [];
@@ -184,6 +251,56 @@ class Mesh {
         ];
 
         return new Mesh( gl, program, verts, indis, material);
+    }
+
+    static box( gl, program, width, height, depth, material ) {
+        let hwidth = width / 2.0;
+        let hheight = height / 2.0;
+        let hdepth = depth / 2.0;
+
+        let verts = [
+            hwidth, -hheight, -hdepth,  1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   0.0, 0.0, -1.0,
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 1.0, 1.0,     0.0, 1.0,   0.0, 0.0, -1.0,
+            -hwidth, hheight, -hdepth,  0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   0.0, 0.0, -1.0,
+            hwidth, hheight, -hdepth,   1.0, 1.0, 0.5, 1.0,     1.0, 0.0,   0.0, 0.0, -1.0,
+
+            hwidth, -hheight, hdepth,   1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   1.0, 0.0, 0.0,
+            hwidth, -hheight, -hdepth,  0.0, 1.0, 1.0, 1.0,     0.0, 1.0,   1.0, 0.0, 0.0,
+            hwidth, hheight, -hdepth,   0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   1.0, 0.0, 0.0,
+            hwidth, hheight, hdepth,    1.0, 1.0, 0.5, 1.0,     1.0, 0.0,   1.0, 0.0, 0.0,
+
+            -hwidth, -hheight, hdepth,  1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   0.0, 0.0, 1.0,
+            hwidth, -hheight, hdepth,   1.0, 1.0, 0.5, 1.0,     0.0, 1.0,   0.0, 0.0, 1.0,
+            hwidth, hheight, hdepth,    0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   0.0, 0.0, 1.0,
+            -hwidth, hheight, hdepth,   0.0, 1.0, 1.0, 1.0,     1.0, 0.0,   0.0, 0.0, 1.0,
+            
+            -hwidth, -hheight, hdepth,  1.0, 0.0, 1.0, 1.0,     0.0, 1.0,   -1.0, 0.0, 0.0,
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 1.0, 1.0,     1.0, 1.0,   -1.0, 0.0, 0.0,
+            -hwidth, hheight, -hdepth,  0.5, 0.5, 1.0, 1.0,     1.0, 0.0,   -1.0, 0.0, 0.0,
+            -hwidth, hheight, hdepth,   1.0, 1.0, 0.5, 1.0,     0.0, 0.0,   -1.0, 0.0, 0.0,
+
+            -hwidth, hheight, -hdepth,  1.0, 0.0, 0.0, 1.0,     0.0, 1.0,   0.0, 1.0, 0.0,
+            hwidth, hheight, -hdepth,   0.0, 1.0, 0.0, 1.0,     1.0, 1.0,   0.0, 1.0, 0.0,
+            hwidth, hheight, hdepth,    0.0, 0.0, 1.0, 1.0,     1.0, 0.0,   0.0, 1.0, 0.0,
+            -hwidth, hheight, hdepth,   1.0, 1.0, 0.0, 1.0,     0.0, 0.0,   0.0, 1.0, 0.0,
+
+            -hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,     0.0, 1.0,   0.0, -1.0, 0.0,
+            hwidth, -hheight, -hdepth,  0.0, 1.0, 0.0, 1.0,     1.0, 1.0,   0.0, -1.0, 0.0,
+            hwidth, -hheight, hdepth,   0.0, 0.0, 1.0, 1.0,     1.0, 0.0,   0.0, -1.0, 0.0,
+            -hwidth, -hheight, hdepth,  1.0, 1.0, 0.0, 1.0,     0.0, 0.0,   0.0, -1.0, 0.0,
+        ];
+
+        let indis = [
+            // clockwise winding
+            0, 3, 2, 2, 1, 0,
+            4, 7, 6, 6, 5, 4,
+            8, 11, 10, 10, 9, 8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 23, 22, 22, 21, 20,
+        ];
+
+        return new Mesh( gl, program, verts, indis, material, false );
     }
 
 

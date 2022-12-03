@@ -1,10 +1,10 @@
 class Camera {
-    constructor( x, y, z, speed ) { // start camera in certain location
+    constructor( x, y, z, p, yaw, r, speed ) { // start camera in certain location
         this.position = new Vec4( x, y, z, 1 );
-        this.pitch_amt = 0;
-        this.yaw_amt = 0;
-        this.roll_amt = 0;
-        this.speed = speed
+        this.pitch_amt = p;
+        this.yaw_amt = yaw;
+        this.roll_amt = r;
+        this.speed = speed;
     }
 
     pitch( direction ) { 
