@@ -21,54 +21,6 @@ class Mesh {
         this.material = material;
     }
 
-    /**
-     * Create a box mesh with the given dimensions and colors.
-     * @param {WebGLRenderingContext} gl 
-     * @param {number} width 
-     * @param {number} height 
-     * @param {number} depth 
-     */
-
-    static box( gl, program, width, height, depth, material ) {
-        let hwidth = width / 2.0;
-        let hheight = height / 2.0;
-        let hdepth = depth / 2.0;
-
-        let verts = [
-            hwidth, -hheight, -hdepth,      1.0, 0.0, 0.0, 1.0,
-            -hwidth, -hheight, -hdepth,     0.0, 1.0, 0.0, 1.0,
-            -hwidth, hheight, -hdepth,      0.0, 0.0, 1.0, 1.0,
-            hwidth, hheight, -hdepth,       1.0, 1.0, 1.0, 1.0,
-
-            hwidth, -hheight, hdepth,       1.0, 1.0, 0.0, 1.0,
-            -hwidth, -hheight, hdepth,      0.0, 0.0, 0.0, 1.0,
-            -hwidth, hheight, hdepth,       1.0, 0.0, 1.0, 1.0,
-            hwidth, hheight, hdepth,        0.0, 1.0, 1.0, 1.0,
-        ];
-
-        let indis = [
-            // clockwise winding
-            /*
-            0, 1, 2, 2, 3, 0, 
-            4, 0, 3, 3, 7, 4, 
-            5, 4, 7, 7, 6, 5, 
-            1, 5, 6, 6, 2, 1,
-            3, 2, 6, 6, 7, 3,
-            4, 5, 1, 1, 0, 4,
-            */
-
-            // counter-clockwise winding
-            0, 3, 2, 2, 1, 0,
-            4, 7, 3, 3, 0, 4,
-            5, 6, 7, 7, 4, 5,
-            1, 2, 6, 6, 5, 1,
-            3, 7, 6, 6, 2, 3,
-            4, 0, 1, 1, 5, 4,
-        ];
-
-        return new Mesh( gl, program, verts, indis, material );
-    }
-
     static uv_cylinder( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
@@ -299,6 +251,56 @@ class Mesh {
         ];
 
         return new Mesh( gl, program, verts, indis, material);
+    }
+
+    static box( gl, program, width, height, depth, material ) {
+        let hwidth = width / 2.0;
+        let hheight = height / 2.0;
+        let hdepth = depth / 2.0;
+
+        let verts = [
+            hwidth, -hheight, -hdepth,  1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   0.0, 0.0, -1.0,
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 1.0, 1.0,     0.0, 1.0,   0.0, 0.0, -1.0,
+            -hwidth, hheight, -hdepth,  0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   0.0, 0.0, -1.0,
+            hwidth, hheight, -hdepth,   1.0, 1.0, 0.5, 1.0,     1.0, 0.0,   0.0, 0.0, -1.0,
+
+            hwidth, -hheight, hdepth,   1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   1.0, 0.0, 0.0,
+            hwidth, -hheight, -hdepth,  0.0, 1.0, 1.0, 1.0,     0.0, 1.0,   1.0, 0.0, 0.0,
+            hwidth, hheight, -hdepth,   0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   1.0, 0.0, 0.0,
+            hwidth, hheight, hdepth,    1.0, 1.0, 0.5, 1.0,     1.0, 0.0,   1.0, 0.0, 0.0,
+
+            -hwidth, -hheight, hdepth,  1.0, 0.0, 1.0, 1.0,     1.0, 1.0,   0.0, 0.0, 1.0,
+            hwidth, -hheight, hdepth,   1.0, 1.0, 0.5, 1.0,     0.0, 1.0,   0.0, 0.0, 1.0,
+            hwidth, hheight, hdepth,    0.5, 0.5, 1.0, 1.0,     0.0, 0.0,   0.0, 0.0, 1.0,
+            -hwidth, hheight, hdepth,   0.0, 1.0, 1.0, 1.0,     1.0, 0.0,   0.0, 0.0, 1.0,
+            
+            -hwidth, -hheight, hdepth,  1.0, 0.0, 1.0, 1.0,     0.0, 1.0,   -1.0, 0.0, 0.0,
+            -hwidth, -hheight, -hdepth, 0.0, 1.0, 1.0, 1.0,     1.0, 1.0,   -1.0, 0.0, 0.0,
+            -hwidth, hheight, -hdepth,  0.5, 0.5, 1.0, 1.0,     1.0, 0.0,   -1.0, 0.0, 0.0,
+            -hwidth, hheight, hdepth,   1.0, 1.0, 0.5, 1.0,     0.0, 0.0,   -1.0, 0.0, 0.0,
+
+            -hwidth, hheight, -hdepth,  1.0, 0.0, 0.0, 1.0,     0.0, 1.0,   0.0, 1.0, 0.0,
+            hwidth, hheight, -hdepth,   0.0, 1.0, 0.0, 1.0,     1.0, 1.0,   0.0, 1.0, 0.0,
+            hwidth, hheight, hdepth,    0.0, 0.0, 1.0, 1.0,     1.0, 0.0,   0.0, 1.0, 0.0,
+            -hwidth, hheight, hdepth,   1.0, 1.0, 0.0, 1.0,     0.0, 0.0,   0.0, 1.0, 0.0,
+
+            -hwidth, -hheight, -hdepth, 1.0, 0.0, 0.0, 1.0,     0.0, 1.0,   0.0, -1.0, 0.0,
+            hwidth, -hheight, -hdepth,  0.0, 1.0, 0.0, 1.0,     1.0, 1.0,   0.0, -1.0, 0.0,
+            hwidth, -hheight, hdepth,   0.0, 0.0, 1.0, 1.0,     1.0, 0.0,   0.0, -1.0, 0.0,
+            -hwidth, -hheight, hdepth,  1.0, 1.0, 0.0, 1.0,     0.0, 0.0,   0.0, -1.0, 0.0,
+        ];
+
+        let indis = [
+            // clockwise winding
+            0, 3, 2, 2, 1, 0,
+            4, 7, 6, 6, 5, 4,
+            8, 11, 10, 10, 9, 8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 23, 22, 22, 21, 20,
+        ];
+
+        return new Mesh( gl, program, verts, indis, material, false );
     }
 
 

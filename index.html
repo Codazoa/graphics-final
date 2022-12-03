@@ -64,7 +64,8 @@
         let gl = canvas.getContext('webgl2');
         
         // let view = new Camera( 0, 0, 2 );
-        let camera = new Camera( 0, 0, -2, CAMERA_SPEED );
+        let camera = new Camera( -1.5, -2.0, -23, 0, 0.03, 0, CAMERA_SPEED );
+        camera.yaw(0.03);
         let view = camera.get_view();
         let perspective = new Mat4();
         let modelview = new Mat4();
@@ -129,6 +130,14 @@
         let road_mat = new Material( gl, 1.0, 0.0, 0.0, 1.0, 'tex/LaserRoad.png');
         let road_mesh = Mesh.uv_road(gl, shader_program, 255, road_mat);
 
+        //car
+        let car_mat = new Material( gl, 0.8, 1.0, 9.0, 10.0, 'tex/car_tex.png');
+        let car_mesh = Mesh.box(gl, shader_program, 0.6, 0.3, 1.3, car_mat);
+
+        //wheel
+        let wheel_mat = new Material( gl, 0.8, 0.8, 0.0, 1.0, 'tex/wheel_tex.png');
+        let wheel_mesh = Mesh.uv_sphere( gl, shader_program, 8, wheel_mat ); 
+
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
@@ -137,7 +146,15 @@
         let road_pos = scene.root.create_child_node(0,0,0,     1,1,1,       1,1,1, null);
         let road = road_pos.create_child_node(1,-252,0,    1,1,0.25,   500.1,2,500.1, road_mesh);
 
-        let orb_axle = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
+        let car = scene.root.create_child_node(0, -2.6, -21,  1,0.015,1,  1,1,1,   car_mesh);
+        let car_windscreen = car.create_child_node(0, 0.15, .25,   1,-0.1,1,   0.8,0.1,0.5,  car_mesh);
+
+        let fl_wheel = car.create_child_node(-0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let fr_wheel = car.create_child_node(0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let bl_wheel = car.create_child_node(-0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let br_wheel = car.create_child_node(0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+
+        let orb_axle = scene.root.create_child_node(0, -1, -19,     1, 1, 1,    1, 1, 1, null);
         
         let orb_pos = orb_axle.create_child_node(3, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let orb = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    0.5, 0.5, 0.5, orb_mesh);
@@ -184,12 +201,12 @@
         
         //skybox
         let skybox_urls = [
-            'tex/ai-skybox/ai-skybox.png',
-            'tex/ai-skybox/ai-skybox.png',
-            'tex/ai-skybox/ai-skybox.png',
-            'tex/ai-skybox/ai-skybox.png',
-            'tex/ai-skybox/ai-skybox.png',
-            'tex/ai-skybox/ai-skybox.png',
+            'tex/ai-skybox/right.png',
+            'tex/ai-skybox/left.png',
+            'tex/ai-skybox/top.png',
+            'tex/ai-skybox/bottom.png',
+            'tex/ai-skybox/front.png',
+            'tex/ai-skybox/back.png',
         ]
         let skybox_tex = Cubemap.loadCubemap(gl, skybox_urls);
         let skybox = Cubemap.box_six_sided(gl, skybox_shader_program, 1, 1, 1, skybox_tex);
@@ -211,6 +228,11 @@
                 }
             });
 
+            console.log(camera.position);
+            console.log(camera.pitch_amt);
+            console.log(camera.yaw_amt);
+            console.log(camera.roll_amt);
+
             set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
                 
 
@@ -224,6 +246,11 @@
             
             ground.add_pitch(0.01 * DELTA_T/3);
             road.add_pitch(0.01 * DELTA_T/3);
+
+            fl_wheel.add_pitch(-1 * DELTA_T );
+            fr_wheel.add_pitch(-1 * DELTA_T );
+            br_wheel.add_pitch(-1 * DELTA_T );
+            bl_wheel.add_pitch(-1 * DELTA_T );
 
             moonA_arm.add_yaw(0.4 * DELTA_T);
             moonA_arm.add_pitch(0.2 * DELTA_T);
