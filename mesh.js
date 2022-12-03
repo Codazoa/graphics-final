@@ -72,8 +72,8 @@ class Mesh {
     static uv_cylinder( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
-        let u;
-        let v;
+        let u = -1;
+        let v = -1;
 
         // generating verts
         for( let layer = 0; layer <= subdivs; layer++ ) {
@@ -93,11 +93,8 @@ class Mesh {
                 //let u = subdiv / subdivs;
                 //let v = layer / subdivs;
 
-                if(u==1){
-                    u=0;
-                }else{
-                    u=1;
-                }
+                u++;
+                u = u % 2;
     
                 verts.push( u, v );
 
@@ -107,11 +104,8 @@ class Mesh {
                 verts.push(norm.x, norm.y, norm.z);
             }
 
-            if(v==1){
-                v=0;
-            }else{
-                v=1;
-            }
+            v++;
+            v = v % 2;
         }
 
         // generating indis
