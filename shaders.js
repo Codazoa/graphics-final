@@ -93,7 +93,7 @@ void main(void){
 
 let skybox_vert =
 `   #version 300 es
-layout (location = 0) in vec3 aPos;
+in vec3 coordinates;
 
 precision mediump float;
 
@@ -103,8 +103,9 @@ uniform mat4 perspective;
 out vec3 TexCoords;
 
 void main(void){
-    TexCoords = aPos;
-    gl_Position = perspective * view * vec4(aPos, 1.0);
+    TexCoords = coordinates;
+    vec4 pos = perspective * view * vec4(coordinates, 1.0);
+    gl_Position = pos.xyww;
 }
 `;
 
