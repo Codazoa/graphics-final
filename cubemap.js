@@ -9,9 +9,6 @@ class Cubemap {
         this.n_indis = indices.length;
         this.program = program;
         this.material = material;
-        console.log(vertices)
-        console.log(indices)
-        console.log(this.n_indis)
     }
 
     render_skybox( gl, view, perspective, texture){
