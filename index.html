@@ -22,10 +22,10 @@
     <script src="mesh.js"></script>
     <script src="listener.js"></script>
     <script src="camera.js"></script>
-    <script src="texture.js"></script>
     <script src="shaders.js"></script>
     <script src="material.js"></script>
     <script src="scene.js"></script>
+    <script src="cubemap.js"></script>
 
     <script>
         let this_mesh;
@@ -41,6 +41,7 @@
         
         const DESIRED_TICK_RATE = 60;
         const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
+        const DELTA_T = 1/DESIRED_TICK_RATE;
         const ASPECT_RATIO = 16/9; // 16:9 aspect ratio
         let FOV = 90; // FOV in degrees (is converted later)
         const NEAR = 0.1; // distance to near plane
@@ -67,59 +68,13 @@
         let modelview = new Mat4();
         
         // compile shaders and activate the shader program
-        let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source );
+        let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source);
         gl.useProgram( shader_program );
+
+        let skybox_shader_program = create_compile_and_link_program( gl, skybox_vert, skybox_frag );
         
         // setting various render settings
         set_render_params( gl );     
-        /*
-        // set the mesh to use
-        // Mesh.from_obj_file( gl, "test_meshes/teapot.obj", shader_program, get_mesh)
-        get_mesh( Mesh.make_uv_sphere(gl, shader_program, 16, null) );
-        
-        // texture stuff
-        let tex = gl.createTexture();
-
-        gl.bindTexture( gl.TEXTURE_2D, tex );
-        set_uniform_scalar( gl, shader_program, 'mat_ambient', ambient );
-        set_uniform_scalar( gl, shader_program, 'mat_diffuse', diffuse ); 
-        set_uniform_scalar( gl, shader_program, 'mat_specular', specular );
-        set_uniform_scalar( gl, shader_program, 'mat_shininess', shininess );
-        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
-        set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
-        set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
-
-        set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
-        set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
-
-        gl.texImage2D( 
-            gl.TEXTURE_2D, 0, gl.RGBA,
-            256, 256, 0,
-            gl.RGBA, gl.UNSIGNED_BYTE,
-            xor_texture(256)
-        );
-        gl.generateMipmap( gl.TEXTURE_2D );
-
-        // set up image
-        let image = new Image();
-        image.onload = function () {
-            gl.bindTexture( gl.TEXTURE_2D, tex );
-            gl.texImage2D( 
-                gl.TEXTURE_2D, 0, gl.RGBA,
-                gl.RGBA, gl.UNSIGNED_BYTE,
-                image
-            );
-            gl.generateMipmap( gl.TEXTURE_2D );
-        };
-
-        image.src = 'tex/metal_scale.png';
-
-        let listener = Keys.start_listening();
-        
-        function get_mesh( mesh ) {
-            this_mesh = mesh;
-        }
-        */
 
         set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
         set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
@@ -147,6 +102,14 @@
 
 
         //set up the scene
+        //earth
+        let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
+        let sun_mesh = Mesh.uv_sphere(gl, shader_program, 24, sun_mat);
+
+        //earth
+        let earth_mat = new Material(gl, 0.25, 1.0, 2.0, 4.0, 'tex/earth/earth_col.jpg');
+        let earth_mesh = Mesh.uv_sphere(gl, shader_program, 24, earth_mat);
+
         //orb
         // let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
         let orb_mat = new Material(gl, 5, 1.0, 2.0, 4.0, 'tex/orb_tex.png');
@@ -203,6 +166,18 @@
 
         
 
+        //skybox
+        let skybox_urls = [
+            'tex/skybox/right.jpg',
+            'tex/skybox/left.jpg',
+            'tex/skybox/top.jpg',
+            'tex/skybox/bottom.jpg',
+            'tex/skybox/front.jpg',
+            'tex/skybox/back.jpg',
+        ]
+        let skybox_tex = Cubemap.loadCubemap(gl, skybox_urls);
+        let skybox = Cubemap.box_six_sided(gl, skybox_shader_program, 1, 1, 1, skybox_tex);
+
 
         gl.clearColor(0.05 , 0.05, 0.05, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -211,7 +186,6 @@
         setInterval( update, DESIRED_MSPT, performance.now() );
         render(performance.now());
 
-        const DELTA_T = 1/DESIRED_TICK_RATE;
         function update() {
             
             // update camera
@@ -223,6 +197,9 @@
 
             set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
                 
+
+            earth_pos.add_yaw(0.5 * DELTA_T);
+            earth_arm.add_roll(0.25 * DELTA_T);
 
             orb_axle.add_yaw(0.2 * DELTA_T);
 
@@ -265,7 +242,6 @@
             moon2C_arm.add_pitch(0.4 * DELTA_T);
             moon2C_arm.add_roll(0.2 * DELTA_T);
 
-
             let jobs = [];
             let lights = [];
             scene.generate_render_batch(jobs, lights);
@@ -280,15 +256,14 @@
         // initializing render function
         function render( now ){
             
-            
             // clear screen
-            gl.clear( gl.COLOR_BUFFER_BIT );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             
             let jobs = [];
             let lights = [];
             scene.generate_render_batch(jobs, lights);
-
-           
+            
+            gl.useProgram( shader_program );
             for (let i = 0; i < jobs.length; i++) {
                 if (jobs[i].mesh != null){
                     // console.log('mesh should render');
@@ -319,10 +294,11 @@
             // set_uniform_vec3_array(gl, shader_program, "point_light_dir["+i.toString()+"]",  light_locs[0]);
             // set_uniform_vec3_array(gl, shader_program, "point_light_color["+i.toString()+"]", light_colors[0]);
 
+            skybox.render_skybox( gl, view, perspective, skybox_tex);
+            gl.useProgram( shader_program ); 
+
             requestAnimationFrame( render );
         }
-        
-        // requestAnimationFrame( render );
         
         function updateFOV() {
             let x = document.getElementById("fov").value;

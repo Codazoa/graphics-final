@@ -19,7 +19,7 @@ class Node {
     }
 
     add_yaw( amount ) { 
-        this.yaw += amount; 
+        this.yaw += amount;
 
         if( this.yaw < 0 ) {
             this.yaw = 1 + this.yaw;
