@@ -123,12 +123,12 @@
 
         //Ground
         let ground_mat = new Material(gl, 1.0, 0.0, 0.0, 1.0, 'tex/laser-grid-texture.png');
-        let ground_mesh = Mesh.uv_cylinder(gl, shader_program, 255, ground_mat);
+        let ground_mesh = Mesh.uv_cylinder(gl, shader_program, 20, 20, ground_mat);
 
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let ground = ground_pos.create_child_node(250, -252, 10,      1, 1, 0.25,    500, 500, 500, ground_mesh);
+        let ground = ground_pos.create_child_node(0, 0, 0,      1, 1, 0.25,    1, 1, 1, ground_mesh);
 
         let orb_axle = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         
