@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>cs442-graphics-engine</title>
+    <link rel="shortcut icon" href="tex/orb_tex.png">
     <style media="screen">
         #the-canvas {border: 1px solid darkblue}
 
@@ -29,6 +30,7 @@
 
     <script>
         let this_mesh;
+        let debounce = true;
 
         // camera movements
         const FORWARD = 0;
@@ -119,23 +121,29 @@
         let moon_mat = new Material(gl, 0.25, 1.0, 4, 5, 'tex/orblettes_tex.png');
         let moon_mesh = Mesh.uv_sphere(gl, shader_program, 24, moon_mat);
 
+        //Ground
+        let ground_mat = new Material(gl, 1.0, 0.0, 0.0, 1.0, 'tex/laser-grid-texture.png');
+        let ground_mesh = Mesh.uv_cylinder(gl, shader_program, 24, ground_mat);
+
         let scene = new Scene();
-        
+        //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
+        let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
+        let ground = ground_pos.create_child_node(250, -30, 10,      1, 1, 0.25,    50, 500, 50, ground_mesh);
+
         let orb_axle = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         
-
         let orb_pos = orb_axle.create_child_node(3, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let orb = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    0.5, 0.5, 0.5, orb_mesh);
         let orblight = orb.create_child_node(0,0,0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
         
         let moonA_arm = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moonA = moonA_arm.create_child_node(1.5, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
+        let moonA = moonA_arm.create_child_node(0.3, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
 
         let moonB_arm = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moonB = moonB_arm.create_child_node(0, 2, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
+        let moonB = moonB_arm.create_child_node(0, 0.6, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
         
         let moonC_arm = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moonC = moonC_arm.create_child_node(0, 0, 2.5,    1, 1, 1,   .2, .2, .2, moon_mesh);
+        let moonC = moonC_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
 
 
         let orb1_pos = orb_axle.create_child_node(-2, 0, 2.5,     1, 1, 1,    1, 1, 1, null);
@@ -143,26 +151,28 @@
         let orb1light = orb1.create_child_node(0,0,0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
         
         let moon1A_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon1A = moon1A_arm.create_child_node(1.5, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
+        let moon1A = moon1A_arm.create_child_node(0.3, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
 
         let moon1B_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon1B = moon1B_arm.create_child_node(0, 2, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
+        let moon1B = moon1B_arm.create_child_node(0, 0.6, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
         
         let moon1C_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon1C = moon1C_arm.create_child_node(0, 0, 2.5,    1, 1, 1,   .2, .2, .2, moon_mesh);
+        let moon1C = moon1C_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
 
         let orb2_pos = orb_axle.create_child_node(-2, 0, -2.5,     1, 1, 1,    1, 1, 1, null);
         let orb2 = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    0.5, 0.5, 0.5, orb_mesh);
-        let orb2light = orb1.create_child_node(0,0,0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
+        let orb2light = orb1.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
         
         let moon2A_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon2A = moon2A_arm.create_child_node(1.5, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
+        let moon2A = moon2A_arm.create_child_node(0.3, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
 
         let moon2B_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon2B = moon1B_arm.create_child_node(0, 2, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
+        let moon2B = moon1B_arm.create_child_node(0, 0.6, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
         
         let moon2C_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
-        let moon2C = moon2C_arm.create_child_node(0, 0, 2.5,    1, 1, 1,   .2, .2, .2, moon_mesh);
+        let moon2C = moon2C_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
+
+        
 
         
         //skybox
@@ -205,6 +215,7 @@
 
             orb.add_yaw(0.2 * DELTA_T);
             
+            ground.add_pitch(0.15 * DELTA_T/2);
 
             moonA_arm.add_yaw(0.4 * DELTA_T);
             moonA_arm.add_pitch(0.2 * DELTA_T);
@@ -251,7 +262,7 @@
             set_uniform_matrix4(gl, shader_program, "view", view.data);
             set_uniform_matrix4(gl, shader_program, "perspective", perspective.data);
         }
-        
+
         // initializing render function
         function render( now ){
             
@@ -264,16 +275,22 @@
             
             gl.useProgram( shader_program );
             for (let i = 0; i < jobs.length; i++) {
+                set_uniform_matrix4(gl, shader_program, "model", jobs[i].matrix.data);
+                
                 if (jobs[i].mesh != null){
+                    if(debounce){
+                        console.log(jobs);
+                        debounce = false;
+                    }
                     // console.log('mesh should render');
                     
-                    jobs[i].mesh.render(gl);
                     jobs[i].mesh.material.bind(gl, shader_program);
+                    jobs[i].mesh.render(gl);
                 }  else {
                     // console.log('mesh not loaded')
                 };
                 
-                set_uniform_matrix4(gl, shader_program, "model", jobs[i].matrix.data);
+                
             }
             let light_locs = [];
             let light_colors = [];

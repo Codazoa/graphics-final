@@ -69,6 +69,70 @@ class Mesh {
         return new Mesh( gl, program, verts, indis, material );
     }
 
+    static uv_cylinder( gl, program, subdivs, material ) {
+        let verts = [];
+        let indis = [];
+        let u;
+        let v;
+
+        // generating verts
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y = ( layer / subdivs ) * -1;
+
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
+    
+                let turns = subdiv / subdivs;
+                let rads = turns * TAU;
+
+                let x = (Math.cos( rads ) / 2);
+                let z = (Math.sin( rads ) / 2);
+    
+                verts.push( x, y, z );
+                verts.push( 1, 1, 1, 1 );
+    
+                //let u = subdiv / subdivs;
+                //let v = layer / subdivs;
+
+                if(u==1){
+                    u=0;
+                }else{
+                    u=1;
+                }
+    
+                verts.push( u, v );
+
+                let norm = new Vec4(x, y, z, 1);
+                norm = norm.norm();
+
+                verts.push(norm.x, norm.y, norm.z);
+            }
+
+            if(v==1){
+                v=0;
+            }else{
+                v=1;
+            }
+        }
+
+        // generating indis
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
+
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
+                // calculate the 2 triangles
+                let current_vert = layer_start_vert + subdiv;
+                let next_layer_vert = current_vert + subdivs + 1;
+                let i0 = next_layer_vert;
+                let i1 = i0 + 1;
+                let i2 = current_vert + 1;
+                indis.push( current_vert, i0, i1, i1, i2, current_vert);
+            }
+        }
+
+        return new Mesh( gl, program, verts, indis, material);
+    }
+
+
     static uv_sphere( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
