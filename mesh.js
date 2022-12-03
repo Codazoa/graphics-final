@@ -69,19 +69,19 @@ class Mesh {
         return new Mesh( gl, program, verts, indis, material );
     }
 
-    static uv_cylinder( gl, program, subdivs, height, material ) {
+    static uv_cylinder( gl, program, subdivs, material ) {
         let verts = [];
         let indis = [];
         let u = -1;
         let v = -1;
 
         // generating verts
-        for( let layer = 0; layer <= height; layer++ ) {
-            let y = ( layer / height ) * -1;
+        for( let layer = 0; layer <= subdivs; layer++ ) {
+            let y = ( layer / subdivs ) * -1;
 
-            for( let subdiv = 0; subdiv <= height; subdiv++ ) {
+            for( let subdiv = 0; subdiv <= subdivs; subdiv++ ) {
     
-                let turns = subdiv / height;
+                let turns = subdiv / subdivs;
                 let rads = turns * TAU;
 
                 let x = (Math.cos( rads ) / 2);
@@ -109,13 +109,13 @@ class Mesh {
         }
 
         // generating indis
-        for( let layer = 0; layer < height; layer++ ) {
-            let layer_start_vert = layer * height + layer;
+        for( let layer = 0; layer < subdivs; layer++ ) {
+            let layer_start_vert = layer * subdivs + layer;
 
-            for( let subdiv = 0; subdiv < height; subdiv++ ) {
+            for( let subdiv = 0; subdiv < subdivs; subdiv++ ) {
                 // calculate the 2 triangles
                 let current_vert = layer_start_vert + subdiv;
-                let next_layer_vert = current_vert + height + 1;
+                let next_layer_vert = current_vert + subdivs + 1;
                 let i0 = next_layer_vert;
                 let i1 = i0 + 1;
                 let i2 = current_vert + 1;
