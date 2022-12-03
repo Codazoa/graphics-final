@@ -19,7 +19,7 @@ class Node {
     }
 
     add_yaw( amount ) { 
-        this.yaw += amount; 
+        this.yaw += amount;
 
         if( this.yaw < 0 ) {
             this.yaw = 1 + this.yaw;
@@ -126,7 +126,7 @@ class Node {
 
     generate_render_batch( parent_matrix, jobs, lights ) {
         let matrix = parent_matrix.mul( this.get_matrix() );
-
+        // console.log(matrix);
         if( this.data instanceof NodeLight ) {
             if( !this.data.is_the_sun ) {
                 let coords = matrix.get_transformed_coordinates();

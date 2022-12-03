@@ -268,3 +268,14 @@ function set_uniform_int( gl, program, name, data ) {
     // gl.useProgram( old_prog );
 }
 
+
+function set_uniform_bullshit( gl, program, name, count, data ) {
+    // let old_prog = gl.getParameter( gl.CURRENT_PROGRAM );
+    // gl.useProgram( program );
+
+    const loc = gl.getUniformLocation( program, name );
+
+    gl.uniform3fv( loc, count, data )
+
+    // gl.useProgram( old_prog );
+}

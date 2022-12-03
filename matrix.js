@@ -308,6 +308,14 @@ class Mat4 {
         ] );
     }
 
+    get_transformed_coordinates() {
+        let x = this.data[ 3 ];
+        let y = this.data[ 7 ];
+        let z = this.data[ 11 ];
+
+        return new Vec4( x, y, z, 1.0 );
+    }
+
     clone() {
         let c = new Array(16);
         for( let i = 0; i < 16; i++ ) { c[i] = this.data[i]; }
