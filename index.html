@@ -32,13 +32,7 @@
         let this_mesh;
         let debounce = true;
 
-        // camera movements
-        const FORWARD = 0;
-        const LEFT = 1;
-        const BACKWARD = 2;
-        const RIGHT = 3;
-        const UP = 4;
-        const DOWN = 5;
+
 
         
         const DESIRED_TICK_RATE = 60;
@@ -49,11 +43,10 @@
         const NEAR = 0.1; // distance to near plane
         const FAR = 100; // distance to far plane
         
-        // camera control speeds
-        let CAMERA_SPEED = 0.002
 
 
-        const sun_dir = new Vec4( 0.0, 1.0, 0.0, 0.0 );
+
+        const sun_dir = new Vec4( 0.0, 0.0, 1.0, 0.0 );
         const sun_color = new Vec4( 0.0, 0.0, 0.0, 1.0 );
         
         let time_delta = 0.0;
@@ -63,12 +56,8 @@
         /** @type {WebGLRenderingContext} */
         let gl = canvas.getContext('webgl2');
         
-        // let view = new Camera( 0, 0, 2 );
-        let camera = new Camera( -1.5, -2.0, -23, 0, 0.03, 0, CAMERA_SPEED );
-        camera.yaw(0.03);
-        let view = camera.get_view();
-        let perspective = new Mat4();
-        let modelview = new Mat4();
+
+
         
         // compile shaders and activate the shader program
         let shader_program = create_compile_and_link_program( gl, vertex_source, fragment_source);
@@ -79,29 +68,14 @@
         // setting various render settings
         set_render_params( gl );     
 
-        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+        
         set_uniform_vec3_array( gl, shader_program, 'sun_dir', [sun_dir.x, sun_dir.y, sun_dir.z] );
         set_uniform_vec3_array( gl, shader_program, 'sun_color', [sun_color.x, sun_color.y, sun_color.z] );
 
         // set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
         // set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
 
-        let listener = Keys.start_listening();
 
-        let key_bindings = {
-            "KeyW": function() { camera.pan(FORWARD) },
-            "KeyA": function() { camera.pan(LEFT) },
-            "KeyS": function() { camera.pan(BACKWARD) },
-            "KeyD": function() { camera.pan(RIGHT) },
-            "Space": function() { camera.pan(UP) },
-            "KeyC": function() { camera.pan(DOWN) },
-            "KeyQ": function() { camera.roll(-1) },
-            "KeyE": function() { camera.roll(1) },
-            "ArrowUp": function() { camera.pitch(1) },
-            "ArrowLeft": function() { camera.yaw(-1) },
-            "ArrowDown": function() { camera.pitch(-1) },
-            "ArrowRight": function() { camera.yaw(1) }
-        }
 
 
         //set up the scene
@@ -144,6 +118,8 @@
 
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
+        let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     1, 1, 1,    1, 1, 1, null);
+
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let ground = ground_pos.create_child_node(250, -252, 0,      1, 1, 0.25,    500, 550, 500, ground_mesh);
         
@@ -151,6 +127,7 @@
         let road = road_pos.create_child_node(1,-252,0,    1,1,0.25,   500.1,2,500.1, road_mesh);
 
         let car = scene.root.create_child_node(0, -2.6, -21,  1,0.015,1,  1,1,1,   car_mesh);
+        let fp_cam = car.create_child_node( 0, -2.2, -21,     1, 1, 1,    1, 1, 1, null);
         let car_windscreen = car.create_child_node(0, 0.15, .25,   1,-0.1,1,   0.8,0.1,0.5,  car_mesh);
 
         let fl_wheel = car.create_child_node(-0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
@@ -204,8 +181,63 @@
         let moon2C = moon2C_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
 
         
+        camera = free_cam;
 
-        
+        let view = camera.get_view_matrix();
+        let perspective = new Mat4();
+        let modelview = new Mat4();
+
+
+        let listener = Keys.start_listening();
+
+        // camera control speeds
+        let CAMERA_SPEED = 0.1;
+        // camera movements
+        const FORWARD = CAMERA_SPEED;
+        const LEFT = -CAMERA_SPEED;
+        const BACKWARD = -CAMERA_SPEED;
+        const RIGHT = CAMERA_SPEED;
+        const UP = CAMERA_SPEED;
+        const DOWN = -CAMERA_SPEED;
+
+        let fp_lock = false;
+        let key_bindings = {
+            "KeyF": function() { 
+                camera = fp_cam;
+                fp_cam.x = 0;
+                fp_cam.y = -2.2;
+                fp_cam.z = -21;
+                fp_cam.yaw = 1;
+                fp_cam.roll = 1;
+                fp_cam.pitch = 1;
+                fp_lock = true;
+            },
+            "KeyG": function() {                
+                camera = fp_cam;
+                fp_cam.x = -1.5;
+                fp_cam.y = -2.0;
+                fp_cam.z = -23;
+                fp_cam.yaw = 0.03;
+                fp_cam.roll = 1;
+                fp_cam.pitch = 1;
+                fp_lock = false;
+            },
+            "KeyW": function() { if(!fp_lock) {camera.move_in_direction(0, 0, FORWARD);} },
+            "KeyA": function() { if(!fp_lock) {camera.move_in_direction(LEFT, 0, 0);} },
+            "KeyS": function() { if(!fp_lock) {camera.move_in_direction(0, 0, BACKWARD);} },
+            "KeyD": function() { if(!fp_lock) {camera.move_in_direction(RIGHT, 0, 0);} },
+            "Space": function() { if(!fp_lock) {camera.move_in_direction(0, UP, 0);} },
+            "KeyC": function() { if(!fp_lock) {camera.move_in_direction(0, DOWN, 0);} },
+            "KeyQ": function() { if(!fp_lock) {camera.add_roll(-1 * DELTA_T);} },
+            "KeyE": function() { if(!fp_lock) {camera.add_roll(1 * DELTA_T);} },
+            "ArrowUp": function() { camera.add_pitch(1 * DELTA_T) },
+            "ArrowLeft": function() { camera.add_yaw(-1 * DELTA_T) },
+            "ArrowDown": function() { camera.add_pitch(-1 * DELTA_T) },
+            "ArrowRight": function() { camera.add_yaw(1 * DELTA_T) }
+        }
+
+
+        set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.x, camera.y, camera.z]);
         //skybox
         let skybox_urls = [
             'tex/ai-skybox/right.png',
@@ -294,7 +326,7 @@
             scene.generate_render_batch(jobs, lights);
 
             perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
-            view = camera.get_view();
+            view = camera.get_view_matrix();
 
             set_uniform_matrix4(gl, shader_program, "view", view.data);
             set_uniform_matrix4(gl, shader_program, "perspective", perspective.data);
@@ -360,7 +392,7 @@
 
         function updateCameraSpeed() {
             let speed = document.getElementById("cam-speed").value;
-            camera.speed = speed / 5000
+            CAMERA_SPEED = speed;
 
         }
             
