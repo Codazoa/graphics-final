@@ -16,6 +16,7 @@
 </head>
 <body>
     <canvas id="the-canvas" width="1280" height="720"></canvas>
+    <!-- <canvas id="the-canvas" width="1920" height="1080"></canvas> -->
 
     <script src="lib.js"></script>
     <script src="matrix.js"></script>
@@ -110,6 +111,10 @@
         let car_mat = new Material( gl, 0.8, 1.0, 9.0, 10.0, 'tex/car_tex.png');
         let car_mesh = Mesh.box(gl, shader_program, 0.6, 0.3, 1.3, car_mat);
 
+        //seat
+        let seat_mat = new Material( gl, 0.8, 0.0, 0.0, 1.0, 'tex/seat_tex.png');
+        let seat_mesh = Mesh.box(gl, shader_program, 0.48, 0.1, 0.2, seat_mat);
+
         //wheel
         let wheel_mat = new Material( gl, 0.8, 0.8, 0.0, 1.0, 'tex/wheel_tex.png');
         let wheel_mesh = Mesh.uv_sphere( gl, shader_program, 8, wheel_mat );
@@ -120,27 +125,37 @@
 
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
-        let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     0.03, 1, 1,    1, 1, 1, null, true);
-        let chase_cam = scene.root.create_child_node( 0, 0, 0,      1,1,1,      1,1,1,      null, true);
-
+        
+        //Ground
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let ground = ground_pos.create_child_node(250, -252, 0,      1, 1, 0.25,    500, 550, 500, ground_mesh);
         
+        //Road
         let road_pos = scene.root.create_child_node(0,0,0,     1,1,1,       1,1,1, null);
         let road = road_pos.create_child_node(1,-252,0,    1,1,0.25,   500.1,2,500.1, road_mesh);
-
-        let car = scene.root.create_child_node(0, -2.6, -21,  1,0.015,1,  1,1,1,   car_mesh);
-        let fp_cam = car.create_child_node( 0, -2.2, -21,     1, 1, 1,    1, 1, 1, null, true);
-        let car_windscreen = car.create_child_node(0, 0.15, .25,   1,-0.1,1,   0.8,0.1,0.5,  car_mesh);
-
-        let fl_wheel = car.create_child_node(-0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
-        let fr_wheel = car.create_child_node(0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
-        let bl_wheel = car.create_child_node(-0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
-        let br_wheel = car.create_child_node(0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
-
-        let l_light = car.create_child_node(-0.24,0.08,0.65,  1,1,1,  0.1,0.1,0.01,    headlight_mesh);
-        let r_light = car.create_child_node(0.24,0.08,0.65,  1,1,1,  0.1,0.1,0.01,    headlight_mesh);
-
+        
+        //Car
+        let car_pos = scene.root.create_child_node(0, -2.6, -21,  1,0.015,1,  1,1,1,   null);
+        let car_bonnet = car_pos.create_child_node(0,0,0.35,    1,1,1,   1,1,0.15,   car_mesh);
+        let car_hood = car_pos.create_child_node(0,0,0.54,     1,0.18,1,      1,1,0.15,      car_mesh);
+        let car_trunk = car_pos.create_child_node(0,0,-0.45,    1,1,1,   1,1,0.3,   car_mesh);
+        let car_floor = car_pos.create_child_node(0,-0.135,0,    1,1,1,  1,0.1,0.4,    car_mesh);
+        let car_left = car_pos.create_child_node(-0.26,0,0, 1,1,1,  0.1,1,0.4,   car_mesh);
+        let car_right = car_pos.create_child_node(0.26,0,0, 1,1,1,  0.1,1,0.4,   car_mesh);
+        let car_windscreen = car_pos.create_child_node(0, 0.15, .25,   1,-0.1,1,   0.8,0.1,0.5,  car_mesh);
+        
+        let car_seat_b = car_pos.create_child_node(0,0,-0.07,   1,1,1,  1,1,1, seat_mesh);
+        let car_seat = car_pos.create_child_node(0,0.1,-0.2,     1,0.05,1,      1,2,0.5,  seat_mesh);
+        
+        let fl_wheel = car_pos.create_child_node(-0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let fr_wheel = car_pos.create_child_node(0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let bl_wheel = car_pos.create_child_node(-0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        let br_wheel = car_pos.create_child_node(0.3, -0.11, -0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
+        
+        let l_light = car_pos.create_child_node(-0.24,0.08,0.65,  1,1,1,  0.1,0.1,0.01,    headlight_mesh);
+        let r_light = car_pos.create_child_node(0.24,0.08,0.65,  1,1,1,  0.1,0.1,0.01,    headlight_mesh);
+        
+        //Floating Orbs
         let orb_axle = scene.root.create_child_node(0, -1, -19,     1, 1, 1,    1, 1, 1, null);
         
         let orb_pos = orb_axle.create_child_node(3, 0, 0,     1, 1, 1,    1, 1, 1, null);
@@ -155,41 +170,43 @@
         
         let moonC_arm = orb_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moonC = moonC_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
-
-
+        
         let orb1_pos = orb_axle.create_child_node(-2, 0, 2.5,     1, 1, 1,    1, 1, 1, null);
         let orb1 = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    0.5, 0.5, 0.5, orb_mesh);
         let orb1light = orb1.create_child_node(0,0,0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
         
         let moon1A_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon1A = moon1A_arm.create_child_node(0.3, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
-
+        
         let moon1B_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon1B = moon1B_arm.create_child_node(0, 0.6, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
         
         let moon1C_arm = orb1_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon1C = moon1C_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
-
+        
         let orb2_pos = orb_axle.create_child_node(-2, 0, -2.5,     1, 1, 1,    1, 1, 1, null);
         let orb2 = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    0.5, 0.5, 0.5, orb_mesh);
         let orb2light = orb1.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, new NodeLight(0.1, 0.0, 1.0, false));
         
         let moon2A_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon2A = moon2A_arm.create_child_node(0.3, 0, 0,    1, 1, 1,   .3, .3, .3, moon_mesh);
-
+        
         let moon2B_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon2B = moon2B_arm.create_child_node(0, 0.6, 0,    1, 1, 1,   .25, .25, .25, moon_mesh);
         
         let moon2C_arm = orb2_pos.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let moon2C = moon2C_arm.create_child_node(0, 0, 0.7,    1, 1, 1,   .2, .2, .2, moon_mesh);
-
+        
+        // Cameras
+        let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     0.03, 1, 1,    1, 1, 1, null, true);
+        let chase_cam = scene.root.create_child_node( 0, 0, 0,      1,1,1,      1,1,1,      null, true);
+        let fp_cam = scene.root.create_child_node( 0, -2.2, -21,     1, 1, 1,    1, 1, 1, null, true);
         
         camera = free_cam;
-
+        
         let view = camera.get_view_matrix();
         let perspective = new Mat4();
         let modelview = new Mat4();
-
 
         let listener = Keys.start_listening();
 
