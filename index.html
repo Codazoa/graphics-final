@@ -267,7 +267,7 @@
                 }
             });
 
-            set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.position.x, camera.position.y, camera.position.z]);
+            set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.x, camera.y, camera.z]);
                 
 
             // earth_pos.add_yaw(0.5 * DELTA_T);
@@ -348,7 +348,6 @@
                 
                 if (jobs[i].mesh != null){
                     if(debounce){
-                        console.log(jobs);
                         debounce = false;
                     }
                     // console.log('mesh should render');
