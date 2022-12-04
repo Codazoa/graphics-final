@@ -119,6 +119,7 @@
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
         let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     1, 1, 1,    1, 1, 1, null);
+        let chase_cam = scene.root.create_child_node( 0, 0, 0,      1,1,1,      1,1,1,      null);
 
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let ground = ground_pos.create_child_node(250, -252, 0,      1, 1, 0.25,    500, 550, 500, ground_mesh);
@@ -204,23 +205,26 @@
         let key_bindings = {
             "KeyF": function() { 
                 camera = fp_cam;
-                fp_cam.x = 0;
-                fp_cam.y = -2.2;
-                fp_cam.z = -21;
                 fp_cam.yaw = 1;
                 fp_cam.roll = 1;
                 fp_cam.pitch = 1;
                 fp_lock = true;
             },
             "KeyG": function() {                
-                camera = fp_cam;
-                fp_cam.x = -1.5;
-                fp_cam.y = -2.0;
-                fp_cam.z = -23;
-                fp_cam.yaw = 0.03;
-                fp_cam.roll = 1;
-                fp_cam.pitch = 1;
+                camera = free_cam;
+                free_cam.warp(-1.5, -2.0, -23);
+                free_cam.yaw = 0.03;
+                free_cam.roll = 1;
+                free_cam.pitch = 1;
                 fp_lock = false;
+            },
+            "KeyO": function() {
+                camera = chase_cam;
+                chase_cam.warp(0, -1, 0 );
+                chase_cam.yaw = 0.5;
+                chase_cam.roll = 1;
+                chase_cam.pitch = 1;
+                fp_lock = true;
             },
             "KeyW": function() { if(!fp_lock) {camera.move_in_direction(0, 0, FORWARD);} },
             "KeyA": function() { if(!fp_lock) {camera.move_in_direction(LEFT, 0, 0);} },
@@ -274,6 +278,8 @@
             // earth_arm.add_roll(0.25 * DELTA_T);
 
             orb_axle.add_yaw(0.2 * DELTA_T);
+
+            chase_cam.move_in_direction(0,0,FORWARD);
 
 
             orb.add_yaw(0.2 * DELTA_T);
