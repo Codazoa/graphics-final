@@ -118,8 +118,8 @@
 
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)
-        let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     1, 1, 1,    1, 1, 1, null);
-        let chase_cam = scene.root.create_child_node( 0, 0, 0,      1,1,1,      1,1,1,      null);
+        let free_cam = scene.root.create_child_node( -1.5, -2.0, -23,     0.03, 1, 1,    1, 1, 1, null, true);
+        let chase_cam = scene.root.create_child_node( 0, 0, 0,      1,1,1,      1,1,1,      null, true);
 
         let ground_pos = scene.root.create_child_node(0, 0, 0,     1, 1, 1,    1, 1, 1, null);
         let ground = ground_pos.create_child_node(250, -252, 0,      1, 1, 0.25,    500, 550, 500, ground_mesh);
@@ -128,7 +128,7 @@
         let road = road_pos.create_child_node(1,-252,0,    1,1,0.25,   500.1,2,500.1, road_mesh);
 
         let car = scene.root.create_child_node(0, -2.6, -21,  1,0.015,1,  1,1,1,   car_mesh);
-        let fp_cam = car.create_child_node( 0, -2.2, -21,     1, 1, 1,    1, 1, 1, null);
+        let fp_cam = car.create_child_node( 0, -2.2, -21,     1, 1, 1,    1, 1, 1, null, true);
         let car_windscreen = car.create_child_node(0, 0.15, .25,   1,-0.1,1,   0.8,0.1,0.5,  car_mesh);
 
         let fl_wheel = car.create_child_node(-0.3, -0.11, 0.45,  1,1,0.25,   0.3,0.1,0.3,  wheel_mesh);
@@ -280,6 +280,7 @@
             orb_axle.add_yaw(0.2 * DELTA_T);
 
             chase_cam.move_in_direction(0,0,FORWARD);
+            chase_cam.add_pitch(-0.00005);
 
 
             orb.add_yaw(0.2 * DELTA_T);
