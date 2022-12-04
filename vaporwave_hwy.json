@@ -1,0 +1,28 @@
+{
+    "scene_materials": {
+        "orb_mat": {
+            "ambient": 1.0,
+            "specular": 0.0,
+            "diffuse": 0.0,
+            "shininess": 1.0,
+            "image_src": "tex/orb_tex.png"
+        },
+        "moon_mat": {
+            "ambient": 0.25,
+            "specular": 0.0,
+            "diffuse": 0.0,
+            "shininess": 1.0,
+            "image_src": "tex/orblettes_tex.png"
+        },
+        "ground_mat": {
+            "ambient": 1.0,
+            "specular": 0.0,
+            "diffuse": 0.0,
+            "shininess": 1.0,
+            "image_src": "tex/laser-grid-texture.png"
+        }
+    },
+    "scene_meshes": {
+        
+    }
+}
