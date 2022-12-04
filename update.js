@@ -21,8 +21,7 @@ function update() {
 
     orb.add_yaw(0.2 * DELTA_T);
     
-    ground.add_pitch(0.01 * DELTA_T/3);
-    road.add_pitch(0.01 * DELTA_T/3);
+    ground_pos.add_pitch(0.01 * DELTA_T/3);
 
     fl_wheel.add_pitch(-1 * DELTA_T );
     fr_wheel.add_pitch(-1 * DELTA_T );
