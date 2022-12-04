@@ -28,8 +28,8 @@
     <script src="material.js"></script>
     <script src="scene.js"></script>
     <script src="cubemap.js"></script>
-    <script src="update.js"></script>
-    <script src="render.js"></script>
+    <!-- <script src="update.js"></script>
+    <script src="render.js"></script> -->
 
     <script>
         let this_mesh;
@@ -280,6 +280,134 @@
         
         setInterval( update, DESIRED_MSPT, performance.now() );
         render(performance.now());
+
+        function update() {
+            
+            // update camera
+            listener.keys_down_list().forEach( key => {
+                if( key in key_bindings ) {
+                    key_bindings[key]();
+                }
+            });
+        
+            set_uniform_vec3_array( gl, shader_program, 'camera_pos', [camera.x, camera.y, camera.z]);
+                
+        
+            // earth_pos.add_yaw(0.5 * DELTA_T);
+            // earth_arm.add_roll(0.25 * DELTA_T);
+        
+            orb_axle.add_yaw(0.2 * DELTA_T);
+        
+            chase_cam.move_in_direction(0,0,FORWARD);
+            chase_cam.add_pitch(-0.00005);
+        
+        
+            orb.add_yaw(0.2 * DELTA_T);
+            
+            ground_pos.add_pitch(0.01 * DELTA_T/3);
+        
+            fl_wheel.add_pitch(-1 * DELTA_T );
+            fr_wheel.add_pitch(-1 * DELTA_T );
+            br_wheel.add_pitch(-1 * DELTA_T );
+            bl_wheel.add_pitch(-1 * DELTA_T );
+        
+            moonA_arm.add_yaw(0.4 * DELTA_T);
+            moonA_arm.add_pitch(0.2 * DELTA_T);
+        
+            moonB_arm.add_roll(0.4 * DELTA_T);
+            moonB_arm.add_yaw(0.2 * DELTA_T);
+        
+            moonC_arm.add_pitch(0.4 * DELTA_T);
+            moonC_arm.add_roll(0.2 * DELTA_T);
+        
+        
+            orb1.add_yaw(0.2 * DELTA_T);
+            
+        
+            moon1A_arm.add_yaw(0.4 * DELTA_T);
+            moon1A_arm.add_pitch(0.2 * DELTA_T);
+        
+            moon1B_arm.add_roll(0.4 * DELTA_T);
+            moon1B_arm.add_yaw(0.2 * DELTA_T);
+        
+            moon1C_arm.add_pitch(0.4 * DELTA_T);
+            moon1C_arm.add_roll(0.2 * DELTA_T);
+        
+        
+            orb2.add_yaw(0.2 * DELTA_T);
+            
+        
+            moon2A_arm.add_yaw(0.4 * DELTA_T);
+            moon2A_arm.add_pitch(0.2 * DELTA_T);
+        
+            moon2B_arm.add_roll(0.4 * DELTA_T);
+            moon2B_arm.add_yaw(0.2 * DELTA_T);
+        
+            moon2C_arm.add_pitch(0.4 * DELTA_T);
+            moon2C_arm.add_roll(0.2 * DELTA_T);
+        
+            let jobs = [];
+            let lights = [];
+            scene.generate_render_batch(jobs, lights);
+        
+            perspective = Mat4.perspective( FOV, ASPECT_RATIO, NEAR, FAR );
+            view = camera.get_view_matrix();
+        
+            set_uniform_matrix4(gl, shader_program, "view", view.data);
+            set_uniform_matrix4(gl, shader_program, "perspective", perspective.data);
+        }
+
+        // initializing render function
+        function render( now ){
+            
+            // clear screen
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            
+            let jobs = [];
+            let lights = [];
+            scene.generate_render_batch(jobs, lights);
+            
+            gl.useProgram( shader_program );
+            for (let i = 0; i < jobs.length; i++) {
+                set_uniform_matrix4(gl, shader_program, "model", jobs[i].matrix.data);
+                
+                if (jobs[i].mesh != null){
+                    if(debounce){
+                        debounce = false;
+                    }
+                    // console.log('mesh should render');
+                    
+                    jobs[i].mesh.material.bind(gl, shader_program);
+                    jobs[i].mesh.render(gl);
+                }  else {
+                    // console.log('mesh not loaded')
+                };
+                
+                
+            }
+            let light_locs = [];
+            let light_colors = [];
+            for (let i = 0; i < 8; i++) {
+
+                if (lights[i] != null){
+                    light_locs[i] = [lights[i].loc.x, lights[i].loc.y, lights[i].loc.z];
+                    light_colors[i] = [lights[i].color.r, lights[i].color.g, lights[i].color.b];
+                } else {
+                    // break;
+                    light_locs[i] = [0, 0, 0];
+                    light_colors[i] = [0, 0, 0];
+                }
+                set_uniform_vec3_array(gl, shader_program, "point_light_pos["+i.toString()+"]",  light_locs[i]);
+                set_uniform_vec3_array(gl, shader_program, "point_light_color["+i.toString()+"]", light_colors[i]);
+            }
+            // set_uniform_vec3_array(gl, shader_program, "point_light_dir["+i.toString()+"]",  light_locs[0]);
+            // set_uniform_vec3_array(gl, shader_program, "point_light_color["+i.toString()+"]", light_colors[0]);
+
+            skybox.render_skybox( gl, view, perspective, skybox_tex);
+            gl.useProgram( shader_program ); 
+
+            requestAnimationFrame( render );
+        }
         
         function updateFOV() {
             let x = document.getElementById("fov").value;
