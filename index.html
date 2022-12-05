@@ -28,8 +28,6 @@
     <script src="material.js"></script>
     <script src="scene.js"></script>
     <script src="cubemap.js"></script>
-    <!-- <script src="update.js"></script>
-    <script src="render.js"></script> -->
 
     <script>
         let this_mesh;
@@ -77,9 +75,6 @@
 
         // set_uniform_vec3_array( gl, shader_program, 'point_light_dir', [point_light_dir.x, point_light_dir.y, point_light_dir.z] );
         // set_uniform_vec3_array( gl, shader_program, 'point_light_color', [point_light_color.x, point_light_color.y, point_light_color.z] );
-
-
-
 
         //set up the scene
         //earth
@@ -213,12 +208,12 @@
         // camera control speeds
         let CAMERA_SPEED = 0.1;
         // camera movements
-        const FORWARD = CAMERA_SPEED;
-        const LEFT = -CAMERA_SPEED;
-        const BACKWARD = -CAMERA_SPEED;
-        const RIGHT = CAMERA_SPEED;
-        const UP = CAMERA_SPEED;
-        const DOWN = -CAMERA_SPEED;
+        let FORWARD = CAMERA_SPEED;
+        let LEFT = -CAMERA_SPEED;
+        let BACKWARD = -CAMERA_SPEED;
+        let RIGHT = CAMERA_SPEED;
+        let UP = CAMERA_SPEED;
+        let DOWN = -CAMERA_SPEED;
 
         let fp_lock = false;
         let key_bindings = {
@@ -298,7 +293,7 @@
         
             orb_axle.add_yaw(0.2 * DELTA_T);
         
-            chase_cam.move_in_direction(0,0,FORWARD);
+            chase_cam.move_in_direction(0,0,0.1);
             chase_cam.add_pitch(-0.00005);
         
         
@@ -416,8 +411,12 @@
 
         function updateCameraSpeed() {
             let speed = document.getElementById("cam-speed").value;
-            CAMERA_SPEED = speed;
-
+            FORWARD = speed / 100;
+            LEFT = -speed / 100;
+            BACKWARD = -speed / 100;
+            RIGHT = speed / 100;
+            UP = speed / 100;
+            DOWN = -speed / 100;
         }
             
     </script>
@@ -436,7 +435,7 @@
             <label for="camera-speed">Camera Speed</label>
             <div class="numbers">
                 <label for="speed" class="float-left"></label>
-                <input type="number" id="cam-speed" min="0" max="100" name="speed" value="10" oninput="updateCameraSpeed()">
+                <input type="number" id="cam-speed" min="1" max="100" name="speed" value="10" oninput="updateCameraSpeed()">
             </div>
 
         </div>
