@@ -81,12 +81,18 @@
         let scene_custom = SceneLoader.loadJSON('vaporwave_hwy.json');
         let mats = scene_custom['scene_materials'];
         let meshes = scene_custom['scene_meshes'];
+        let graphs = scene_custom['scene_graph'];
+        let anims = scene_custom['scene_animations'];
 
         let scene_materials = Object.keys(mats);
         let scene_meshes = Object.keys(meshes);
+        let scene_graphs = Object.keys(graphs);
+        let scene_anims = Object.keys(anims);
 
         let material_dict = {};
         let mesh_dict = {};
+        let scene_dict = {};
+        let anim_dict = {};
         
         scene_materials.forEach( mat => {
             material_dict[mat] = SceneLoader.loadMaterial(gl, mats[mat]);
@@ -94,7 +100,15 @@
 
         scene_meshes.forEach( mesh => {
             mesh_dict[mesh] = SceneLoader.loadMesh(gl, shader_program, meshes[mesh], material_dict);
-        })
+        });
+
+        scene_graphs.forEach( obj => {
+
+        });
+
+        scene_anims.forEach( anim => {
+
+        });
         
         let orb_mat = material_dict['orb_mat'];
         let moon_mat = material_dict['moon_mat'];

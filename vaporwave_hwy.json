@@ -101,11 +101,17 @@
   },
   "scene_graph":{
       "ground_pos": {
+        "pos": [0,0,0],
+        "ypr": [1,1,1],
+        "scale": [1,1,1],
         "mesh": null,
         "cam": false,
         "children": [
           {
             "ground": {
+              "pos": [0,0,0],
+              "ypr": [1,1,1],
+              "scale": [1,1,1],
               "mesh": "ground_mesh",
               "cam": false,
               "children": []
@@ -113,6 +119,9 @@
           },
           {
             "road": {
+              "pos": [0,0,0],
+              "ypr": [1,1,1],
+              "scale": [1,1,1],
               "mesh": "road_mesh",
               "cam": false,
               "children": []
@@ -121,11 +130,17 @@
         ]
       },
       "car_pos": {
+        "pos": [0,0,0],
+        "ypr": [1,1,1],
+        "scale": [1,1,1],
         "mesh": null,
         "cam": false,
         "children": []
       },
       "orb_axle": {
+        "pos": [0,0,0],
+        "ypr": [1,1,1],
+        "scale": [1,1,1],
         "mesh": null,
         "cam": false,
         "children": []
@@ -133,6 +148,26 @@
 
   },
   "scene_animations": {
-
+    "orb_axle":{
+      "add_yaw": [0.2],
+      "add_pitch": null,
+      "add_roll": null,
+      "change_scale": null,
+      "move_in_direction": null
+    },
+    "orb":{
+      "add_yaw": [0.2],
+      "add_pitch": null,
+      "add_roll": null,
+      "change_scale": null,
+      "move_in_direction": null
+    },
+    "ground_pos": {
+      "add_yaw": null,
+      "add_pitch": [0.003],
+      "add_roll": null,
+      "change_scale": null,
+      "move_in_direction": null
+    }
   }
 }

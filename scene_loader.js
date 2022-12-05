@@ -17,10 +17,14 @@ class SceneLoader {
     }
 
     static loadMesh(gl, program, obj, materials){
-        return Mesh[obj['mesh']](gl, program, obj['options'], materials[obj['material']]);
+        return Mesh[obj['mesh']](gl, program, obj['options'], this.mats[obj['material']]);
     }
 
-    static loadAnim( obj ){
+    static create_graph( obj, scene_meshes ){
+        
+    }
 
+    static loadAnim( obj, scene_objects ){
+        scene_objects[obj]
     }
 }
