@@ -28,31 +28,12 @@
     <script src="material.js"></script>
     <script src="scene.js"></script>
     <script src="cubemap.js"></script>
-    <!-- <script src="update.js"></script>
-    <script src="render.js"></script> -->
+    <script src="scene_loader.js"></script> 
 
-    <script>
-        class FileHelper {
-            static readStringFromFileAtPath(path) {
-                let request = new XMLHttpRequest();
-                request.open("GET", path, false);
-                request.send(null);
-                let returnValue = request.responseText;
-
-                return returnValue;
-            }
-        }
-        let vaporwave_scene = JSON.parse(FileHelper.readStringFromFileAtPath('vaporwave_hwy.json'));
-        console.log(vaporwave_scene);
-        
+    <script>        
         let this_mesh;
         let debounce = false;
 
-
-
-
-
-        
         const DESIRED_TICK_RATE = 60;
         const DESIRED_MSPT = 1000 / DESIRED_TICK_RATE;
         const DELTA_T = 1/DESIRED_TICK_RATE;
@@ -97,51 +78,78 @@
 
 
         //set up the scene
+        let scene_custom = SceneLoader.loadJSON('vaporwave_hwy.json');
+        let mats = scene_custom['scene_materials'];
+        let meshes = scene_custom['scene_meshes'];
+
+        let scene_materials = Object.keys(mats);
+        let scene_meshes = Object.keys(meshes);
+
+        let material_dict = {};
+        let mesh_dict = {};
+        
+        scene_materials.forEach( mat => {
+            material_dict[mat] = SceneLoader.loadMaterial(gl, mats[mat]);
+        });
+
+        scene_meshes.forEach( mesh => {
+            mesh_dict[mesh] = SceneLoader.loadMesh(gl, shader_program, meshes[mesh], material_dict);
+        })
+        
+        let orb_mat = material_dict['orb_mat'];
+        let moon_mat = material_dict['moon_mat'];
+        let ground_mat = material_dict['ground_mat'];
+
+        
+
+        
 
 
+
+
+        
 
 
 
         //earth
         let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
-        let sun_mesh = Mesh.uv_sphere(gl, shader_program, 24, sun_mat);
+        let sun_mesh = Mesh.uv_sphere(gl, shader_program, [24], sun_mat);
 
         //earth
         let earth_mat = new Material(gl, 0.25, 1.0, 2.0, 4.0, 'tex/earth/earth_col.jpg');
-        let earth_mesh = Mesh.uv_sphere(gl, shader_program, 24, earth_mat);
+        let earth_mesh = Mesh.uv_sphere(gl, shader_program, [24], earth_mat);
 
         //orb
         // let sun_mat = new Material(gl, 1, 0.0, 0.0, 1.0, 'tex/sun/sun_col.jpg');
-        let orb_mat = new Material(gl, 5, 1.0, 2.0, 4.0, 'tex/orb_tex.png');
-        let orb_mesh = Mesh.uv_sphere(gl, shader_program, 24, orb_mat);
+        let orb_mesh = mesh_dict['orb_mesh'];
 
         //moon
-        let moon_mat = new Material(gl, 0.25, 1.0, 4, 5, 'tex/orblettes_tex.png');
-        let moon_mesh = Mesh.uv_sphere(gl, shader_program, 24, moon_mat);
+        // let moon_mat = new Material(gl, 0.25, 1.0, 4, 5, 'tex/orblettes_tex.png');
+        let moon_mesh = Mesh.uv_sphere(gl, shader_program, [24], moon_mat);
 
         //Ground
-        let ground_mat = new Material(gl, 1.0, 0.0, 0.0, 1.0, 'tex/laser-grid-texture.png');
-        let ground_mesh = Mesh.uv_cylinder(gl, shader_program, 255, ground_mat);
+        // let ground_mat = new Material(gl, 1.0, 0.0, 0.0, 1.0, 'tex/laser-grid-texture.png');
+        let ground_mesh = Mesh.uv_cylinder(gl, shader_program, [255], ground_mat);
 
         //road
         let road_mat = new Material( gl, 1.0, 0.0, 0.0, 1.0, 'tex/LaserRoad.png');
-        let road_mesh = Mesh.uv_road(gl, shader_program, 255, road_mat);
+        let road_mesh = Mesh.uv_road(gl, shader_program, [255], road_mat);
 
         //car
         let car_mat = new Material( gl, 0.8, 1.0, 9.0, 10.0, 'tex/car_tex.png');
-        let car_mesh = Mesh.box(gl, shader_program, 0.6, 0.3, 1.3, car_mat);
+        let car_mesh = Mesh.box(gl, shader_program, [0.6, 0.3, 1.3], car_mat);
 
         //seat
         let seat_mat = new Material( gl, 0.8, 0.0, 0.0, 1.0, 'tex/seat_tex.png');
-        let seat_mesh = Mesh.box(gl, shader_program, 0.48, 0.1, 0.2, seat_mat);
+        let seat_mesh = Mesh.box(gl, shader_program, [0.48, 0.1, 0.2], seat_mat);
 
         //wheel
         let wheel_mat = new Material( gl, 0.8, 0.8, 0.0, 1.0, 'tex/wheel_tex.png');
-        let wheel_mesh = Mesh.uv_sphere( gl, shader_program, 8, wheel_mat );
+        let wheel_mesh = Mesh.uv_sphere( gl, shader_program, [8], wheel_mat );
 
         //headlights
         let headlight_mat = new Material( gl, 8, 0.1, 8.0, 10.0, 'tex/headlight_tex.png');
-        let headlight_mesh = Mesh.uv_sphere( gl, shader_program, 8, headlight_mat);
+        let headlight_mesh = Mesh.uv_sphere( gl, shader_program, [8], headlight_mat);
 
         let scene = new Scene();
         //(posX, posY, posZ,    yaw, pitch, roll, scaleX, scaleY, scaleZ)

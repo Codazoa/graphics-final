@@ -21,7 +21,8 @@ class Mesh {
         this.material = material;
     }
 
-    static uv_cylinder( gl, program, subdivs, material ) {
+    static uv_cylinder( gl, program, options, material ) {
+        let subdivs = options[0];
         let verts = [];
         let indis = [];
         let u = -1;
@@ -78,7 +79,8 @@ class Mesh {
         return new Mesh( gl, program, verts, indis, material);
     }
 
-    static uv_road( gl, program, subdivs, material ) {
+    static uv_road( gl, program, options, material ) {
+        let subdivs = options[0];
         let verts = [];
         let indis = [];
         let u = -1;
@@ -136,7 +138,9 @@ class Mesh {
     }
 
 
-    static uv_sphere( gl, program, subdivs, material ) {
+    static uv_sphere( gl, program, options, material ) {
+        const subdivs = options[0];
+        console.log(subdivs);
         let verts = [];
         let indis = [];
 
@@ -253,7 +257,10 @@ class Mesh {
         return new Mesh( gl, program, verts, indis, material);
     }
 
-    static box( gl, program, width, height, depth, material ) {
+    static box( gl, program, options, material ) {
+        const width = options[0];
+        const height = options[1];
+        const depth = options[2];
         let hwidth = width / 2.0;
         let hheight = height / 2.0;
         let hdepth = depth / 2.0;

@@ -1,10 +1,10 @@
 {
     "scene_materials": {
         "orb_mat": {
-            "ambient": 1.0,
+            "ambient": 5.0,
             "specular": 0.0,
-            "diffuse": 0.0,
-            "shininess": 1.0,
+            "diffuse": 2.0,
+            "shininess": 4.0,
             "image_src": "tex/orb_tex.png"
         },
         "moon_mat": {
@@ -23,6 +23,23 @@
         }
     },
     "scene_meshes": {
-        
+        "orb_mesh":{
+            "mesh": "uv_sphere",
+            "material": "orb_mat",
+            "options": [24]
+        },
+        "moon_mesh":{
+            "mesh": "uv_sphere",
+            "material": "moon_mat",
+            "options": [24]
+        },
+        "ground_mesh":{
+            "mesh": "uv_cylinder",
+            "material": "ground_mat",
+            "options": [255]
+        }
+    },
+    "scene_animations": {
+
     }
 }
